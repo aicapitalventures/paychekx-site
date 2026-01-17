@@ -271,7 +271,7 @@
       <div class="tierbox">
         <div class="tierline">
           <div class="tierbadge" id="tierBadge">ACCESS</div>
-          <a class="btn ghost" href="/monetization/">Pricing</a>
+          <a class="btn ghost" href="../monetization/">Pricing</a>
         </div>
         <ul class="checklist" id="tierNotes"></ul>
       </div>
@@ -282,7 +282,7 @@
         </div>
         <div class="small">
           If a tool does not open, confirm you are using a modern browser and that pop-ups are not blocked.
-          Each tool is a local HTML system loaded from <code class="k">/tools/</code>.
+          Each tool is a local HTML system loaded from <code class="k">../tools/</code>.
         </div>
       </div>
 
@@ -304,63 +304,48 @@
 </footer>
 
 <script>
-  const tools = [
-    {
-      key: "runway",
-      name: "Runway Checker",
-      desc: "How long your cash lasts at current burn.",
-      href: "/tools/runway-checker.html",
-      tier: ["core", "full", "single"]
-    },
-    {
-      key: "triage",
-      name: "Bill Triage Board",
-      desc: "Prioritize bills under constraint.",
-      href: "/tools/bill-triage-board.html",
-      tier: ["core", "full", "single"]
-    },
-    {
-      key: "split",
-      name: "Payday Split Planner",
-      desc: "Allocate each paycheck with discipline.",
-      href: "/tools/payday-split-planner.html",
-      tier: ["core", "full", "single"]
-    },
-    {
-      key: "micro",
-      name: "Emergency Micro Budget",
-      desc: "Tight-margin budget builder.",
-      href: "/tools/emergency-micro-budget.html",
-      tier: ["core", "full", "single"]
-    },
-    {
-      key: "shock",
-      name: "Bill Shock Buffer Builder",
-      desc: "Build a buffer for irregular expenses.",
-      href: "/tools/bill-shock-buffer-builder.html",
-      tier: ["full", "single"]
-    },
-    {
-      key: "stress",
-      name: "Money Stress Reality Check",
-      desc: "Reality-based snapshot of pressure points.",
-      href: "/tools/money-stress-reality-check.html",
-      tier: ["full", "single"]
-    },
-    {
-      key: "hidden",
-      name: "Hidden Bills Subscription Finder",
-      desc: "Find recurring drains you forgot.",
-      href: "/tools/hidden-bills-subscription-finder.html",
-      tier: ["full", "single"]
-    },
-    {
-      key: "debt",
-      name: "Debt Pressure Snapshot",
-      desc: "Quantify debt pressure quickly.",
-      href: "/tools/debt-pressure-snapshot.html",
-      tier: ["full", "single"]
+  // --- SINGLE TIER HARD-LOCK (device-based) ---
+  const SINGLE_LOCK_KEY = "paychekx_single_selected_v1";
+  const SINGLE_LOCK_DEBUG_KEY = "paychekx_single_debug_unlock_v1"; // optional owner escape
+
+  function getSingleSelection(){
+    try {
+      const raw = localStorage.getItem(SINGLE_LOCK_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
     }
+  }
+
+  function setSingleSelection(tool){
+    const payload = {
+      toolKey: tool.key,
+      toolName: tool.name,
+      toolHref: tool.href,
+      selectedAt: new Date().toISOString()
+    };
+    localStorage.setItem(SINGLE_LOCK_KEY, JSON.stringify(payload));
+    return payload;
+  }
+
+  function isDebugUnlock(){
+    // Optional owner override:
+    // ?tier=single&unlock=1  OR set localStorage paychekx_single_debug_unlock_v1 = "1"
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("unlock") === "1") return true;
+    return localStorage.getItem(SINGLE_LOCK_DEBUG_KEY) === "1";
+  }
+
+  const tools = [
+    { key:"runway", name:"Runway Checker", desc:"How long your cash lasts at current burn.", href:"../tools/runway-checker.html", tier:["core","full","single"] },
+    { key:"triage", name:"Bill Triage Board", desc:"Prioritize bills under constraint.", href:"../tools/bill-triage-board.html", tier:["core","full","single"] },
+    { key:"split", name:"Payday Split Planner", desc:"Allocate each paycheck with discipline.", href:"../tools/payday-split-planner.html", tier:["core","full","single"] },
+    { key:"micro", name:"Emergency Micro Budget", desc:"Tight-margin budget builder.", href:"../tools/emergency-micro-budget.html", tier:["core","full","single"] },
+    { key:"shock", name:"Bill Shock Buffer Builder", desc:"Build a buffer for irregular expenses.", href:"../tools/bill-shock-buffer-builder.html", tier:["full","single"] },
+    { key:"stress", name:"Money Stress Reality Check", desc:"Reality-based snapshot of pressure points.", href:"../tools/money-stress-reality-check.html", tier:["full","single"] },
+    { key:"hidden", name:"Hidden Bills Subscription Finder", desc:"Find recurring drains you forgot.", href:"../tools/hidden-bills-subscription-finder.html", tier:["full","single"] },
+    { key:"debt", name:"Debt Pressure Snapshot", desc:"Quantify debt pressure quickly.", href:"../tools/debt-pressure-snapshot.html", tier:["full","single"] }
   ];
 
   function getTier(){
@@ -380,7 +365,7 @@
       single: {label:"Single Tool", badge:"SINGLE", notes:[
         "Choose one tool from the list.",
         "No accounts or tracking.",
-        "If you purchased multiple single tools, bookmark this page and repeat checkout as needed."
+        "This device will lock to your selection."
       ]},
       core: {label:"Core Survival Bundle", badge:"CORE", notes:[
         "Includes 4 tools: Runway, Triage, Split, Micro Budget.",
@@ -422,20 +407,120 @@
     if (tier === "core") allowed = tools.filter(t => t.tier.includes("core"));
     else if (tier === "full") allowed = tools.filter(t => t.tier.includes("full"));
     else if (tier === "single") allowed = tools.filter(t => t.tier.includes("single"));
-    else allowed = []; // unknown
+    else allowed = [];
 
     if (tier === "unknown"){
       title.textContent = "Access not detected";
-      sub.textContent = "Use the Pricing button to complete checkout, then you will be redirected back here.";
+      sub.textContent = "Use Pricing to complete checkout, then you will be redirected back here.";
       const a = document.createElement("a");
       a.className = "btn";
-      a.href = "/monetization/";
+      a.href = "../monetization/";
       a.textContent = "Open pricing";
       list.appendChild(a);
       return;
     }
 
-    title.textContent = (tier === "single") ? "Choose your tool" : "Your tools are ready";
+    if (tier === "single" && !isDebugUnlock()){
+      const existing = getSingleSelection();
+
+      if (!existing){
+        title.textContent = "Select ONE tool (one-time choice)";
+        sub.textContent = "After you select a tool, this access will lock to that tool on this device.";
+
+        allowed.forEach(t => {
+          const row = document.createElement("div");
+          row.className = "tool";
+
+          const left = document.createElement("div");
+          const nm = document.createElement("div");
+          nm.className = "name";
+          nm.textContent = t.name;
+
+          const ds = document.createElement("div");
+          ds.className = "desc";
+          ds.textContent = t.desc;
+
+          left.appendChild(nm);
+          left.appendChild(ds);
+
+          const btn = document.createElement("button");
+          btn.className = "btn";
+          btn.type = "button";
+          btn.textContent = "Select this tool";
+          btn.addEventListener("click", () => {
+            setSingleSelection(t);
+            renderTools("single");
+          });
+
+          row.appendChild(left);
+          row.appendChild(btn);
+          list.appendChild(row);
+        });
+
+        const note = document.createElement("div");
+        note.className = "small";
+        note.textContent =
+          "Note: This lock is device-based. If you switch devices or clear browser storage, you may be prompted to choose again.";
+        list.appendChild(note);
+
+        return;
+      }
+
+      const chosen = tools.find(t => t.key === existing.toolKey);
+
+      title.textContent = "Your tool is locked";
+      sub.textContent = `Locked selection: ${existing.toolName}.`;
+
+      if (!chosen){
+        const msg = document.createElement("div");
+        msg.className = "small";
+        msg.textContent = "Your selected tool could not be found. Contact support.";
+        list.appendChild(msg);
+        return;
+      }
+
+      const row = document.createElement("div");
+      row.className = "tool";
+
+      const left = document.createElement("div");
+      const nm = document.createElement("div");
+      nm.className = "name";
+      nm.textContent = chosen.name;
+
+      const ds = document.createElement("div");
+      ds.className = "desc";
+      ds.textContent = chosen.desc;
+
+      left.appendChild(nm);
+      left.appendChild(ds);
+
+      const open = document.createElement("a");
+      open.className = "btn";
+      open.href = chosen.href;
+      open.target = "_blank";
+      open.rel = "noopener";
+      open.textContent = "Open";
+
+      row.appendChild(left);
+      row.appendChild(open);
+      list.appendChild(row);
+
+      const lockInfo = document.createElement("div");
+      lockInfo.className = "small";
+      lockInfo.textContent =
+        "This Single Tool Access is locked to the tool above on this device. To purchase another tool, use Pricing.";
+      list.appendChild(lockInfo);
+
+      const pricing = document.createElement("a");
+      pricing.className = "btn ghost";
+      pricing.href = "../monetization/";
+      pricing.textContent = "Purchase another tool";
+      list.appendChild(pricing);
+
+      return;
+    }
+
+    title.textContent = "Your tools are ready";
     sub.textContent = "Click any tool to launch.";
 
     allowed.forEach(t => {
