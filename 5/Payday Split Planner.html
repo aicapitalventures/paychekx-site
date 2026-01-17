@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PAYCHEKX, Payday Split Planner | AICV</title>
+
+  <!-- REQUIRED FILES (same folder as this HTML)
+       1) favicon.ico                  (PAYCHEKX favicon)
+       2) aicv-mark.png                (AICV authority mark image)
+       3) paychekx-logo.png            (PAYCHEKX product line logo image)
+       4) aicv-glyph.svg               (AICV triangle glyph watermark tile)
+  -->
+
+  <link rel="icon" href="favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#060814;
+      --bg2:#04050d;
+      --text:#f3f6ff;
+      --muted:rgba(220, 230, 255, 0.72);
+      --muted2:rgba(220, 230, 255, 0.55);
+      --line:rgba(95, 116, 180, 0.22);
+      --shadow: 0 18px 50px rgba(0,0,0,0.55);
+      --radius:18px;
+
+      --good:rgba(34,197,94,0.16);
+      --warn:rgba(234,179,8,0.16);
+      --bad: rgba(239,68,68,0.16);
+
+      --panel: rgba(10, 12, 26, 0.62);
+      --panel2:#0b1022;
+      --panel3:#070b19;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 50% -10%, rgba(34, 188, 255, 0.18), transparent 55%),
+                  radial-gradient(900px 600px at 10% 30%, rgba(85, 140, 255, 0.12), transparent 55%),
+                  radial-gradient(900px 600px at 90% 25%, rgba(80, 255, 200, 0.08), transparent 60%),
+                  linear-gradient(180deg, var(--bg2), var(--bg));
+      overflow-x:hidden;
+    }
+
+    .frame{ min-height:100vh; display:flex; flex-direction:column; position:relative; isolation:isolate; }
+
+    /* Authority Header Zone */
+    .authority{
+      position:relative; z-index:5;
+      padding:18px 16px 12px;
+      max-width:1060px; margin:0 auto; width:100%;
+    }
+    .authorityBar{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.55);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 34px rgba(0,0,0,0.32);
+    }
+    .aicvLockup{ display:flex; align-items:center; gap:12px; min-width:240px; }
+    .aicvMark{
+      width:44px; height:44px; object-fit:contain;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.55));
+    }
+    .aicvText{ display:flex; flex-direction:column; line-height:1.05; }
+    .aicvName{
+      font-weight:900; letter-spacing:0.08em; font-size:12px;
+      color:rgba(235, 245, 255, 0.92); text-transform:uppercase;
+    }
+    .aicvTag{
+      margin-top:6px; font-size:11px; letter-spacing:0.16em;
+      text-transform:uppercase; color:rgba(220, 230, 255, 0.58); white-space:nowrap;
+    }
+    .productLockup{ display:flex; align-items:center; justify-content:flex-end; gap:12px; min-width:240px; }
+    .productLogo{
+      height:34px; width:auto; object-fit:contain;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55));
+    }
+
+    /* Context Field */
+    .context{
+      position:relative; z-index:1; flex:1;
+      display:flex; align-items:center; justify-content:center;
+      padding:22px 16px 60px;
+    }
+    .context::before{
+      content:""; position:absolute; inset:0;
+      background:
+        radial-gradient(1px 1px at 20% 35%, rgba(255,255,255,0.28), transparent 55%),
+        radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.22), transparent 55%),
+        radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.18), transparent 55%),
+        radial-gradient(1px 1px at 80% 30%, rgba(255,255,255,0.20), transparent 55%),
+        radial-gradient(2px 2px at 30% 70%, rgba(64,220,255,0.15), transparent 60%),
+        radial-gradient(2px 2px at 70% 65%, rgba(60,130,255,0.12), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 35%, rgba(255,255,255,0.02));
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .context::after{
+      content:""; position:absolute; inset:0;
+      background-image:url("aicv-glyph.svg");
+      background-repeat:repeat;
+      background-size:160px 160px;
+      background-position:14px 10px;
+      opacity:0.07;
+      filter:saturate(1.05) brightness(1.08);
+      pointer-events:none; z-index:0;
+    }
+
+    .horizon{
+      position:absolute; left:0; right:0; bottom:0; height:220px;
+      pointer-events:none; z-index:1;
+      background:
+        radial-gradient(70% 60% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(60% 50% at 50% 55%, rgba(40,120,255,0.14), transparent 62%),
+        linear-gradient(180deg, transparent 0%, rgba(4, 6, 14, 0.25) 40%, rgba(4, 6, 14, 0.72) 100%);
+    }
+    .horizon::before{
+      content:""; position:absolute; left:10%; right:10%; bottom:70px; height:2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(64,220,255,0.75) 30%, rgba(80,255,200,0.35) 50%, rgba(40,120,255,0.75) 70%, transparent 100%);
+      opacity:0.75;
+    }
+    .horizon::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:120px;
+      background: linear-gradient(180deg, rgba(6,8,20,0.0), rgba(6,8,20,0.7) 55%, rgba(6,8,20,0.92));
+    }
+
+    .payload{
+      position:relative; z-index:3;
+      width:min(980px, 100%); margin:0 auto;
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+    }
+
+    .titleBlock{
+      width:100%;
+      padding:18px 18px 10px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.38);
+    }
+    .artifactTitle{ margin:0; font-size:26px; letter-spacing:-0.02em; font-weight:950; }
+    .artifactSub{ margin:8px 0 0; font-size:13px; color:var(--muted); line-height:1.45; }
+
+    .stage{ position:relative; width:100%; padding-bottom:26px; }
+    .stage::before{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:18px;
+      width:min(860px, 92%); height:260px;
+      background:
+        radial-gradient(60% 50% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(55% 50% at 50% 55%, rgba(40,120,255,0.12), transparent 65%),
+        radial-gradient(65% 60% at 50% 90%, rgba(0,0,0,0.62), transparent 70%);
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .stage::after{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:205px;
+      width:min(820px, 90%); height:26px; border-radius:999px;
+      background: radial-gradient(closest-side, rgba(64,220,255,0.35), rgba(40,120,255,0.16), transparent 70%);
+      filter: blur(6px); opacity:0.55; pointer-events:none; z-index:0;
+    }
+
+    .toolCard{
+      position:relative; z-index:2; width:100%;
+      border-radius: var(--radius);
+      border:1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .toolCard::before{
+      content:""; position:absolute; inset:-1px;
+      background:
+        radial-gradient(820px 240px at 50% 0%, rgba(64,220,255,0.16), transparent 60%),
+        radial-gradient(650px 260px at 10% 0%, rgba(80,255,200,0.08), transparent 65%),
+        radial-gradient(650px 260px at 90% 0%, rgba(40,120,255,0.10), transparent 65%);
+      pointer-events:none; z-index:0;
+    }
+    .toolInner{ position:relative; z-index:1; padding:16px; }
+
+    .grid2{ display:grid; grid-template-columns: 1.05fr 0.95fr; gap:12px; }
+    @media (max-width:920px){ .grid2{ grid-template-columns: 1fr; } }
+
+    .panel{
+      border:1px solid rgba(120,140,210,0.22);
+      background: rgba(11,16,34,0.82);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .sectionTitle{
+      margin:0;
+      font-size:14px;
+      font-weight:950;
+      letter-spacing:0.01em;
+    }
+    .sectionHint{
+      margin:6px 0 0;
+      font-size:12.5px;
+      color:rgba(220, 230, 255, 0.62);
+      line-height:1.45;
+    }
+
+    label{ display:block; font-size:13px; color:var(--muted2); margin:10px 0 6px; }
+    input[type="text"], input[type="number"], input[type="date"], select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+    }
+    input[type="number"]{ appearance:textfield; }
+    select{ cursor:pointer; }
+
+    .hint{ font-size:12.5px; color:rgba(220, 230, 255, 0.58); line-height:1.45; margin-top:8px; }
+
+    .items{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+    .item{
+      border:1px solid rgba(120,140,210,0.18);
+      background: rgba(7,11,25,0.86);
+      border-radius:14px;
+      padding:12px;
+      display:grid;
+      grid-template-columns: 1.0fr 0.55fr 0.55fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .item .mini{ font-size:12px; color:rgba(220, 230, 255, 0.58); margin-top:4px; }
+    .remove{
+      padding:10px 12px; border-radius:10px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      color:rgba(220, 230, 255, 0.62);
+      font-weight:950; cursor:pointer; white-space:nowrap;
+      box-shadow:none;
+    }
+    @media (max-width:780px){
+      .item{ grid-template-columns: 1fr 1fr; }
+      .item .remove{ grid-column: 1 / -1; width:100%; }
+    }
+
+    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    button{
+      border:1px solid rgba(120,140,210,0.22);
+      background: linear-gradient(180deg, rgba(18, 24, 52, 0.95), rgba(10, 12, 26, 0.95));
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:12px;
+      font-weight:950;
+      font-size:14px;
+      cursor:pointer;
+      flex:1 1 160px;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.35);
+    }
+    button.secondary{
+      background: var(--panel2);
+      color:rgba(220, 230, 255, 0.62);
+      box-shadow:none;
+      font-weight:950;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .error{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:rgba(255, 150, 175, 0.95);
+      font-weight:900;
+      display:none;
+    }
+
+    .resultWrap{ margin-top:12px; display:none; }
+    .result{
+      border-radius:16px;
+      border:1px solid rgba(120,140,210,0.22);
+      overflow:hidden;
+      background: rgba(10,12,26,0.55);
+    }
+    .zone{
+      padding:14px;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      position:relative;
+    }
+    .zone .icon{
+      width:36px; height:36px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:950;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      flex:0 0 auto;
+    }
+    .zone h2{ margin:0; font-size:18px; letter-spacing:-0.01em; }
+    .zone p{ margin:6px 0 0; color:rgba(220, 230, 255, 0.70); line-height:1.45; }
+
+    .metrics{
+      padding:12px 14px 14px;
+      border-top:1px solid rgba(120,140,210,0.22);
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:10px;
+      background: var(--panel2);
+    }
+    .metric{
+      border:1px solid rgba(120,140,210,0.18);
+      background: var(--panel3);
+      border-radius:14px;
+      padding:10px;
+    }
+    .metric .k{ color:rgba(220, 230, 255, 0.58); font-size:12px; margin:0 0 6px; }
+    .metric .v{ font-size:18px; font-weight:950; margin:0; }
+
+    .zone.safe  { background: linear-gradient(90deg, var(--good), rgba(10,12,26,0.0)); }
+    .zone.tight { background: linear-gradient(90deg, var(--warn), rgba(10,12,26,0.0)); }
+    .zone.danger{ background: linear-gradient(90deg, var(--bad), rgba(10,12,26,0.0)); }
+
+    .listMini{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .rowLine{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.18);
+      background: rgba(7,11,25,0.86);
+    }
+    .rowLine b{ font-weight:950; }
+    .rowLine span{ color:rgba(220,230,255,0.65); font-size:13px; line-height:1.35; max-width:70%; text-align:right; }
+
+    .foot{
+      margin-top:12px;
+      padding:12px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      color:rgba(220, 230, 255, 0.62);
+      font-size:12.5px;
+      line-height:1.5;
+      max-width:1060px;
+      margin-left:auto;
+      margin-right:auto;
+      margin-bottom:22px;
+    }
+
+    @media (max-width: 520px){
+      .aicvTag{ display:none; }
+      .productLogo{ height:30px; }
+      .metrics{ grid-template-columns: 1fr; }
+      .rowLine{ flex-direction:column; }
+      .rowLine span{ max-width:100%; text-align:left; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="frame">
+    <header class="authority">
+      <div class="authorityBar">
+        <div class="aicvLockup">
+          <img class="aicvMark" src="aicv-mark.png" alt="AICV" />
+          <div class="aicvText">
+            <div class="aicvName">AICV</div>
+            <div class="aicvTag">ARTIFICIAL INTELLIGENCE CAPITAL VENTURES</div>
+          </div>
+        </div>
+        <div class="productLockup">
+          <img class="productLogo" src="paychekx-logo.png" alt="PAYCHEKX" />
+        </div>
+      </div>
+    </header>
+
+    <main class="context">
+      <div class="horizon" aria-hidden="true"></div>
+
+      <section class="payload" aria-label="PAYCHEKX tool">
+        <div class="titleBlock">
+          <h1 class="artifactTitle">Payday Split Planner</h1>
+          <p class="artifactSub">
+            A PAYCHEKX financial clarity tool. Plan exactly what your next paycheck must do, then see what is left.
+            Nothing is saved, no accounts, no tracking.
+          </p>
+        </div>
+
+        <div class="stage">
+          <div class="toolCard" aria-label="Tool card">
+            <div class="toolInner">
+
+              <div class="grid2">
+                <!-- LEFT: paycheck + settings -->
+                <div class="panel">
+                  <p class="sectionTitle">A. Your paycheck</p>
+                  <p class="sectionHint">Enter the paycheck amount you expect to land in your account.</p>
+
+                  <label for="payAmount">Paycheck amount (take home)</label>
+                  <input id="payAmount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Example: 950" />
+
+                  <label for="payDate">Payday date (optional)</label>
+                  <input id="payDate" type="date" />
+
+                  <p class="sectionTitle" style="margin-top:14px;">B. Split settings</p>
+                  <p class="sectionHint">Choose a style. Conservative leaves more buffer.</p>
+
+                  <label for="mode">Split style</label>
+                  <select id="mode">
+                    <option value="minimum" selected>Minimum (cover must-pay first)</option>
+                    <option value="balanced">Balanced (must-pay + essentials + buffer)</option>
+                    <option value="conservative">Conservative (more buffer, less flex)</option>
+                  </select>
+
+                  <label for="bufferPct">Target buffer percent (optional)</label>
+                  <input id="bufferPct" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Example: 10 (meaning 10%)" />
+                  <div class="hint">Leave blank to let the tool choose a realistic buffer based on your mode.</div>
+
+                  <div class="btnrow">
+                    <button id="addBillBtn" type="button">Add a bill</button>
+                    <button id="planBtn" type="button">Build my split</button>
+                    <button id="resetBtn" class="secondary" type="button">Reset</button>
+                  </div>
+
+                  <div class="error" id="errorBox"></div>
+
+                  <div class="hint" style="margin-top:12px;">
+                    Bills listed here are the ones you intend to pay from this paycheck window.
+                    If a bill is not due yet, you can leave it out.
+                  </div>
+                </div>
+
+                <!-- RIGHT: bill list -->
+                <div class="panel">
+                  <p class="sectionTitle">C. Bills to cover from this paycheck</p>
+                  <p class="sectionHint">Add what must be paid before the next paycheck hits.</p>
+
+                  <div class="items" id="billList"></div>
+
+                  <div class="sectionHint" style="margin-top:12px;">Quick prompts:</div>
+                  <div class="items" style="margin-top:10px;">
+                    <div class="hint">Rent, phone, car note, insurance, utilities, overdue balances, child expenses.</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Result -->
+              <div class="resultWrap" id="resultCard">
+                <div class="result">
+                  <div class="zone" id="zoneBar">
+                    <div class="icon" id="zoneIcon">•</div>
+                    <div>
+                      <h2 id="zoneTitle">Result</h2>
+                      <p id="zoneText">Enter your paycheck and bills, then build your split.</p>
+                    </div>
+                  </div>
+
+                  <div class="metrics">
+                    <div class="metric">
+                      <p class="k">Bills covered</p>
+                      <p class="v" id="mBills">$0.00</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Buffer set aside</p>
+                      <p class="v" id="mBuffer">$0.00</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Flexible remainder</p>
+                      <p class="v" id="mFlex">$0.00</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel" style="margin-top:12px;">
+                  <p class="sectionTitle">D. Your payday plan (one screen)</p>
+                  <p class="sectionHint">This is a checklist. Follow it on payday. No optimization, no advice.</p>
+
+                  <div class="listMini" id="planLines"></div>
+
+                  <div class="hint" style="margin-top:12px;">
+                    This tool does not provide financial advice. It reflects an allocation order based on your inputs.
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      PAYCHEKX is an everyday financial clarity toolset. Powered by AICV. This tool does not provide financial advice.
+      It reflects the inputs you enter for private use.
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function money(n){
+      if (!isFinite(n)) return "$0.00";
+      const sign = n < 0 ? "-" : "";
+      const abs = Math.abs(n);
+      return sign + "$" + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function parseAmount(val){
+      const n = Number(String(val).replace(/[^0-9.\-]/g, ""));
+      return isFinite(n) ? n : NaN;
+    }
+
+    function showError(msg){
+      const box = $("errorBox");
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+
+    function clearError(){
+      const box = $("errorBox");
+      box.textContent = "";
+      box.style.display = "none";
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // Bills: { name, amount, priority }
+    // priority: "must" | "important" | "optional"
+    const bills = [];
+
+    function priorityLabel(p){
+      if (p === "must") return "Must pay";
+      if (p === "important") return "Important";
+      if (p === "optional") return "Optional";
+      return "Must pay";
+    }
+
+    function priorityWeight(p){
+      if (p === "must") return 3;
+      if (p === "important") return 2;
+      if (p === "optional") return 1;
+      return 2;
+    }
+
+    function addBillRow(name="", amount="", priority="must"){
+      bills.push({ name, amount: amount === "" ? "" : Number(amount), priority });
+      renderBills();
+    }
+
+    function renderBills(){
+      const list = $("billList");
+      list.innerHTML = "";
+
+      if (bills.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "hint";
+        empty.style.marginTop = "10px";
+        empty.textContent = "No bills yet. Add what you intend to cover from this paycheck.";
+        list.appendChild(empty);
+        return;
+      }
+
+      bills.forEach((it, idx) => {
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const left = document.createElement("div");
+        left.innerHTML = `<div style="font-weight:950; letter-spacing:-0.01em;">${escapeHtml(it.name || "Bill")}</div>
+                          <div class="mini">${priorityLabel(it.priority)}</div>`;
+
+        const amt = document.createElement("div");
+        amt.innerHTML = `<div style="font-weight:950;">${money(Number(it.amount) || 0)}</div>
+                         <div class="mini">Amount</div>`;
+
+        const pr = document.createElement("div");
+        pr.innerHTML = `<div style="font-weight:950;">${escapeHtml(priorityLabel(it.priority))}</div>
+                        <div class="mini">Priority</div>`;
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "remove";
+        del.textContent = "Edit";
+        del.addEventListener("click", () => openEdit(idx));
+
+        row.appendChild(left);
+        row.appendChild(amt);
+        row.appendChild(pr);
+        row.appendChild(del);
+
+        list.appendChild(row);
+      });
+    }
+
+    function openEdit(idx){
+      const it = bills[idx];
+
+      const name = prompt("Bill name:", it.name || "");
+      if (name === null) return;
+
+      const amtStr = prompt("Amount (number):", String(it.amount || ""));
+      if (amtStr === null) return;
+
+      const amt = parseAmount(amtStr);
+      if (!isFinite(amt) || amt < 0){
+        alert("Please enter a valid amount (0 or higher).");
+        return;
+      }
+
+      const pStr = prompt("Priority: must, important, or optional", it.priority || "must");
+      if (pStr === null) return;
+
+      const p = String(pStr).trim().toLowerCase();
+      if (!["must","important","optional"].includes(p)){
+        alert("Priority must be: must, important, or optional.");
+        return;
+      }
+
+      bills[idx] = { name: String(name).trim(), amount: amt, priority: p };
+      renderBills();
+    }
+
+    function sumBills(){
+      let total = 0;
+      for (const b of bills){
+        total += Number(b.amount) || 0;
+      }
+      return total;
+    }
+
+    function modeDefaults(mode){
+      // Default buffer targets if user leaves bufferPct blank
+      // Minimum: 5%
+      // Balanced: 10%
+      // Conservative: 15%
+      if (mode === "minimum") return 0.05;
+      if (mode === "balanced") return 0.10;
+      if (mode === "conservative") return 0.15;
+      return 0.10;
+    }
+
+    function buildPlanLines(data){
+      const list = $("planLines");
+      list.innerHTML = "";
+
+      const lines = [];
+
+      const paydayLabel = data.payDate ? ` on ${data.payDate}` : "";
+      lines.push({ k: "Payday", v: `Paycheck ${money(data.payAmount)}${paydayLabel}.` });
+
+      lines.push({ k: "Step 1, cover bills", v: `Set aside ${money(data.billsCovered)} for bills in this window.` });
+
+      if (data.billsShort > 0){
+        lines.push({ k: "Bill gap", v: `You are short ${money(data.billsShort)} for listed bills. Consider editing the list by priority.` });
+      } else {
+        lines.push({ k: "Bills status", v: "Listed bills are covered by this paycheck split." });
+      }
+
+      lines.push({ k: "Step 2, set buffer", v: `Set aside ${money(data.buffer)} as a shock buffer.` });
+
+      lines.push({ k: "Step 3, essentials and flex", v: `Remaining flexible money is ${money(data.flex)}.` });
+
+      if (data.flex <= 0){
+        lines.push({ k: "Reality signal", v: "This split leaves little to no flex. That can be a valid survival posture if bills are covered." });
+      } else if (data.flex < (0.10 * data.payAmount)){
+        lines.push({ k: "Reality signal", v: "Flex is tight. Keep spending controlled to reduce surprise damage." });
+      } else {
+        lines.push({ k: "Reality signal", v: "You have some flex. Protect the buffer so one surprise does not reset the month." });
+      }
+
+      lines.push({ k: "Reminder", v: "This is not advice. It is an allocation order you can follow to reduce uncertainty." });
+
+      for (const line of lines){
+        const row = document.createElement("div");
+        row.className = "rowLine";
+        row.innerHTML = `<b>${escapeHtml(line.k)}</b><span>${escapeHtml(line.v)}</span>`;
+        list.appendChild(row);
+      }
+    }
+
+    function renderResult(data){
+      let zone = "safe";
+      let icon = "✓";
+      let title = "Your paycheck has a clear assignment.";
+      let text  = "Based on what you entered, the split is clear and you can follow it on payday.";
+
+      if (data.billsShort > 0){
+        zone = "danger";
+        icon = "!";
+        title = "Your listed bills exceed your paycheck.";
+        text  = "Based on what you entered, you are short for the bills you listed. Use priorities to decide what must be covered first.";
+      } else if (data.flex <= 0){
+        zone = "tight";
+        icon = "•";
+        title = "Bills are covered, but flexibility is near zero.";
+        text  = "Based on what you entered, you can cover bills and buffer, but there is little room for extras.";
+      } else if (data.buffer < (0.05 * data.payAmount)){
+        zone = "tight";
+        icon = "•";
+        title = "Your buffer is small relative to your paycheck.";
+        text  = "Based on what you entered, your buffer is light. If surprises happen, the month could still get unstable.";
+      }
+
+      const zoneBar = $("zoneBar");
+      zoneBar.classList.remove("safe","tight","danger");
+      zoneBar.classList.add(zone);
+
+      $("zoneIcon").textContent = icon;
+      $("zoneTitle").textContent = title;
+      $("zoneText").textContent = text;
+
+      $("mBills").textContent = money(data.billsCovered);
+      $("mBuffer").textContent = money(data.buffer);
+      $("mFlex").textContent = money(data.flex);
+
+      buildPlanLines(data);
+
+      $("resultCard").style.display = "block";
+      $("resultCard").scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function compute(){
+      clearError();
+
+      const payAmount = parseAmount($("payAmount").value);
+      if (!isFinite(payAmount) || payAmount <= 0){
+        showError("Enter a paycheck amount greater than 0.");
+        return;
+      }
+
+      const mode = $("mode").value;
+
+      const bufferPctRaw = String($("bufferPct").value || "").trim();
+      let bufferPct = NaN;
+      if (bufferPctRaw !== ""){
+        bufferPct = parseAmount(bufferPctRaw) / 100;
+        if (!isFinite(bufferPct) || bufferPct < 0){
+          showError("Buffer percent must be 0 or higher.");
+          return;
+        }
+        if (bufferPct > 0.60){
+          showError("Buffer percent is unusually high. Enter 60 or lower, or leave blank.");
+          return;
+        }
+      } else {
+        bufferPct = modeDefaults(mode);
+      }
+
+      // Bills ordering: must -> important -> optional; within same group, larger amounts first
+      const sorted = bills
+        .map(b => ({ ...b, amount: Number(b.amount) || 0 }))
+        .sort((a,b) => {
+          const dw = priorityWeight(b.priority) - priorityWeight(a.priority);
+          if (dw !== 0) return dw;
+          return (b.amount - a.amount);
+        });
+
+      const totalBills = sorted.reduce((s,b) => s + b.amount, 0);
+
+      let remaining = payAmount;
+
+      // Step 1: cover bills (as much as possible)
+      let billsCovered = 0;
+      let billsShort = 0;
+
+      for (const b of sorted){
+        if (remaining <= 0) { billsShort += b.amount; continue; }
+        const pay = Math.min(remaining, b.amount);
+        billsCovered += pay;
+        remaining -= pay;
+        if (pay < b.amount) billsShort += (b.amount - pay);
+      }
+
+      // Step 2: buffer (but never take buffer when billsShort exists, unless user has no bills listed)
+      let buffer = 0;
+      if (bills.length === 0){
+        buffer = Math.min(remaining, payAmount * bufferPct);
+        remaining -= buffer;
+      } else if (billsShort <= 0){
+        buffer = Math.min(remaining, payAmount * bufferPct);
+        remaining -= buffer;
+      } else {
+        buffer = 0;
+      }
+
+      // Step 3: flex remainder
+      const flex = remaining;
+
+      const payDate = String($("payDate").value || "").trim();
+
+      renderResult({ payAmount, payDate, mode, totalBills, billsCovered, billsShort, bufferPct, buffer, flex });
+    }
+
+    function resetAll(){
+      clearError();
+      $("payAmount").value = "";
+      $("payDate").value = "";
+      $("mode").value = "minimum";
+      $("bufferPct").value = "";
+      bills.length = 0;
+      renderBills();
+      $("resultCard").style.display = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    $("addBillBtn").addEventListener("click", () => {
+      const name = prompt("Bill name (example: rent):", "");
+      if (name === null) return;
+
+      const amtStr = prompt("Amount (number):", "");
+      if (amtStr === null) return;
+
+      const amt = parseAmount(amtStr);
+      if (!isFinite(amt) || amt < 0){
+        alert("Please enter a valid amount (0 or higher).");
+        return;
+      }
+
+      const pStr = prompt("Priority: must, important, or optional", "must");
+      if (pStr === null) return;
+
+      const p = String(pStr).trim().toLowerCase();
+      if (!["must","important","optional"].includes(p)){
+        alert("Priority must be: must, important, or optional.");
+        return;
+      }
+
+      bills.push({ name: String(name).trim(), amount: amt, priority: p });
+      renderBills();
+    });
+
+    $("planBtn").addEventListener("click", compute);
+    $("resetBtn").addEventListener("click", resetAll);
+
+    // Initial state
+    renderBills();
+  </script>
+</body>
+</html>

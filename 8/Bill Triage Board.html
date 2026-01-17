@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PAYCHEKX, Bill Triage Board | AICV</title>
+
+  <!-- REQUIRED FILES (same folder as this HTML)
+       1) favicon.ico                  (PAYCHEKX favicon)
+       2) aicv-mark.png                (AICV authority mark image)
+       3) paychekx-logo.png            (PAYCHEKX product line logo image)
+       4) aicv-glyph.svg               (AICV triangle glyph watermark tile)
+  -->
+
+  <link rel="icon" href="favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#060814;
+      --bg2:#04050d;
+      --text:#f3f6ff;
+      --muted:rgba(220, 230, 255, 0.72);
+      --muted2:rgba(220, 230, 255, 0.55);
+      --line:rgba(95, 116, 180, 0.22);
+      --shadow: 0 18px 50px rgba(0,0,0,0.55);
+      --radius:18px;
+
+      --good:rgba(34,197,94,0.16);
+      --warn:rgba(234,179,8,0.16);
+      --bad: rgba(239,68,68,0.16);
+
+      --panel: rgba(10, 12, 26, 0.62);
+      --panel2:#0b1022;
+      --panel3:#070b19;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 50% -10%, rgba(34, 188, 255, 0.18), transparent 55%),
+                  radial-gradient(900px 600px at 10% 30%, rgba(85, 140, 255, 0.12), transparent 55%),
+                  radial-gradient(900px 600px at 90% 25%, rgba(80, 255, 200, 0.08), transparent 60%),
+                  linear-gradient(180deg, var(--bg2), var(--bg));
+      overflow-x:hidden;
+    }
+
+    .frame{ min-height:100vh; display:flex; flex-direction:column; position:relative; isolation:isolate; }
+
+    /* Authority Header Zone */
+    .authority{
+      position:relative; z-index:5;
+      padding:18px 16px 12px;
+      max-width:1060px; margin:0 auto; width:100%;
+    }
+    .authorityBar{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.55);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 34px rgba(0,0,0,0.32);
+    }
+    .aicvLockup{ display:flex; align-items:center; gap:12px; min-width:240px; }
+    .aicvMark{
+      width:44px; height:44px; object-fit:contain;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.55));
+    }
+    .aicvText{ display:flex; flex-direction:column; line-height:1.05; }
+    .aicvName{
+      font-weight:900; letter-spacing:0.08em; font-size:12px;
+      color:rgba(235, 245, 255, 0.92); text-transform:uppercase;
+    }
+    .aicvTag{
+      margin-top:6px; font-size:11px; letter-spacing:0.16em;
+      text-transform:uppercase; color:rgba(220, 230, 255, 0.58); white-space:nowrap;
+    }
+    .productLockup{ display:flex; align-items:center; justify-content:flex-end; gap:12px; min-width:240px; }
+    .productLogo{
+      height:34px; width:auto; object-fit:contain;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55));
+    }
+
+    /* Context Field */
+    .context{
+      position:relative; z-index:1; flex:1;
+      display:flex; align-items:center; justify-content:center;
+      padding:22px 16px 60px;
+    }
+    .context::before{
+      content:""; position:absolute; inset:0;
+      background:
+        radial-gradient(1px 1px at 20% 35%, rgba(255,255,255,0.28), transparent 55%),
+        radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.22), transparent 55%),
+        radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.18), transparent 55%),
+        radial-gradient(1px 1px at 80% 30%, rgba(255,255,255,0.20), transparent 55%),
+        radial-gradient(2px 2px at 30% 70%, rgba(64,220,255,0.15), transparent 60%),
+        radial-gradient(2px 2px at 70% 65%, rgba(60,130,255,0.12), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 35%, rgba(255,255,255,0.02));
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .context::after{
+      content:""; position:absolute; inset:0;
+      background-image:url("aicv-glyph.svg");
+      background-repeat:repeat;
+      background-size:160px 160px;
+      background-position:14px 10px;
+      opacity:0.07;
+      filter:saturate(1.05) brightness(1.08);
+      pointer-events:none; z-index:0;
+    }
+
+    .horizon{
+      position:absolute; left:0; right:0; bottom:0; height:220px;
+      pointer-events:none; z-index:1;
+      background:
+        radial-gradient(70% 60% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(60% 50% at 50% 55%, rgba(40,120,255,0.14), transparent 62%),
+        linear-gradient(180deg, transparent 0%, rgba(4, 6, 14, 0.25) 40%, rgba(4, 6, 14, 0.72) 100%);
+    }
+    .horizon::before{
+      content:""; position:absolute; left:10%; right:10%; bottom:70px; height:2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(64,220,255,0.75) 30%, rgba(80,255,200,0.35) 50%, rgba(40,120,255,0.75) 70%, transparent 100%);
+      opacity:0.75;
+    }
+    .horizon::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:120px;
+      background: linear-gradient(180deg, rgba(6,8,20,0.0), rgba(6,8,20,0.7) 55%, rgba(6,8,20,0.92));
+    }
+
+    .payload{
+      position:relative; z-index:3;
+      width:min(1100px, 100%); margin:0 auto;
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+    }
+
+    .titleBlock{
+      width:100%;
+      padding:18px 18px 10px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.38);
+    }
+    .artifactTitle{ margin:0; font-size:26px; letter-spacing:-0.02em; font-weight:950; }
+    .artifactSub{ margin:8px 0 0; font-size:13px; color:var(--muted); line-height:1.45; }
+
+    .stage{ position:relative; width:100%; padding-bottom:26px; }
+    .stage::before{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:18px;
+      width:min(980px, 92%); height:280px;
+      background:
+        radial-gradient(60% 50% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(55% 50% at 50% 55%, rgba(40,120,255,0.12), transparent 65%),
+        radial-gradient(65% 60% at 50% 90%, rgba(0,0,0,0.62), transparent 70%);
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .stage::after{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:220px;
+      width:min(940px, 90%); height:26px; border-radius:999px;
+      background: radial-gradient(closest-side, rgba(64,220,255,0.35), rgba(40,120,255,0.16), transparent 70%);
+      filter: blur(6px); opacity:0.55; pointer-events:none; z-index:0;
+    }
+
+    .toolCard{
+      position:relative; z-index:2; width:100%;
+      border-radius: var(--radius);
+      border:1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .toolCard::before{
+      content:""; position:absolute; inset:-1px;
+      background:
+        radial-gradient(820px 240px at 50% 0%, rgba(64,220,255,0.16), transparent 60%),
+        radial-gradient(650px 260px at 10% 0%, rgba(80,255,200,0.08), transparent 65%),
+        radial-gradient(650px 260px at 90% 0%, rgba(40,120,255,0.10), transparent 65%);
+      pointer-events:none; z-index:0;
+    }
+    .toolInner{ position:relative; z-index:1; padding:16px; }
+
+    .grid3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+    @media (max-width:1040px){ .grid3{ grid-template-columns: 1fr; } }
+
+    .panel{
+      border:1px solid rgba(120,140,210,0.22);
+      background: rgba(11,16,34,0.82);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .sectionTitle{
+      margin:0;
+      font-size:14px;
+      font-weight:950;
+      letter-spacing:0.01em;
+    }
+    .sectionHint{
+      margin:6px 0 0;
+      font-size:12.5px;
+      color:rgba(220, 230, 255, 0.62);
+      line-height:1.45;
+    }
+
+    label{ display:block; font-size:13px; color:var(--muted2); margin:10px 0 6px; }
+    input[type="number"], input[type="text"], select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+      appearance:textfield;
+    }
+    select{ cursor:pointer; }
+
+    .hint{ font-size:12.5px; color:rgba(220, 230, 255, 0.58); line-height:1.45; margin-top:8px; }
+
+    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    button{
+      border:1px solid rgba(120,140,210,0.22);
+      background: linear-gradient(180deg, rgba(18, 24, 52, 0.95), rgba(10, 12, 26, 0.95));
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:12px;
+      font-weight:950;
+      font-size:14px;
+      cursor:pointer;
+      flex:1 1 170px;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.35);
+    }
+    button.secondary{
+      background: var(--panel2);
+      color:rgba(220, 230, 255, 0.62);
+      box-shadow:none;
+      font-weight:950;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .items{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+
+    .item{
+      border:1px solid rgba(120,140,210,0.18);
+      background: rgba(7,11,25,0.86);
+      border-radius:14px;
+      padding:12px;
+      display:grid;
+      grid-template-columns: 1.1fr 0.6fr 0.75fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .item .mini{ font-size:12px; color:rgba(220, 230, 255, 0.58); margin-top:4px; }
+    .tag{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: rgba(11,16,34,0.82);
+      font-weight:950; font-size:12px; color:rgba(220,230,255,0.78);
+      white-space:nowrap;
+    }
+
+    .remove{
+      padding:10px 12px; border-radius:10px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      color:rgba(220, 230, 255, 0.62);
+      font-weight:950; cursor:pointer; white-space:nowrap;
+      box-shadow:none;
+    }
+    @media (max-width:780px){
+      .item{ grid-template-columns: 1fr 1fr; }
+      .item .remove{ grid-column: 1 / -1; width:100%; }
+    }
+
+    .error{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:rgba(255, 150, 175, 0.95);
+      font-weight:900;
+      display:none;
+    }
+
+    .resultWrap{ margin-top:12px; display:none; }
+    .result{
+      border-radius:16px;
+      border:1px solid rgba(120,140,210,0.22);
+      overflow:hidden;
+      background: rgba(10,12,26,0.55);
+    }
+    .zone{
+      padding:14px;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      position:relative;
+    }
+    .zone .icon{
+      width:36px; height:36px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:950;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      flex:0 0 auto;
+    }
+    .zone h2{ margin:0; font-size:18px; letter-spacing:-0.01em; }
+    .zone p{ margin:6px 0 0; color:rgba(220, 230, 255, 0.70); line-height:1.45; }
+
+    .metrics{
+      padding:12px 14px 14px;
+      border-top:1px solid rgba(120,140,210,0.22);
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+      background: var(--panel2);
+    }
+    .metric{
+      border:1px solid rgba(120,140,210,0.18);
+      background: var(--panel3);
+      border-radius:14px;
+      padding:10px;
+    }
+    .metric .k{ color:rgba(220, 230, 255, 0.58); font-size:12px; margin:0 0 6px; }
+    .metric .v{ font-size:18px; font-weight:950; margin:0; }
+
+    .zone.safe  { background: linear-gradient(90deg, var(--good), rgba(10,12,26,0.0)); }
+    .zone.tight { background: linear-gradient(90deg, var(--warn), rgba(10,12,26,0.0)); }
+    .zone.danger{ background: linear-gradient(90deg, var(--bad), rgba(10,12,26,0.0)); }
+
+    .board{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .rowLine{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.18);
+      background: rgba(7,11,25,0.86);
+    }
+    .rowLine b{ font-weight:950; }
+    .rowLine span{ color:rgba(220,230,255,0.65); font-size:13px; line-height:1.35; max-width:70%; text-align:right; }
+
+    .foot{
+      margin-top:12px;
+      padding:12px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      color:rgba(220, 230, 255, 0.62);
+      font-size:12.5px;
+      line-height:1.5;
+      max-width:1060px;
+      margin-left:auto;
+      margin-right:auto;
+      margin-bottom:22px;
+    }
+
+    @media (max-width: 520px){
+      .aicvTag{ display:none; }
+      .productLogo{ height:30px; }
+      .metrics{ grid-template-columns: 1fr; }
+      .rowLine{ flex-direction:column; }
+      .rowLine span{ max-width:100%; text-align:left; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="frame">
+    <header class="authority">
+      <div class="authorityBar">
+        <div class="aicvLockup">
+          <img class="aicvMark" src="aicv-mark.png" alt="AICV" />
+          <div class="aicvText">
+            <div class="aicvName">AICV</div>
+            <div class="aicvTag">ARTIFICIAL INTELLIGENCE CAPITAL VENTURES</div>
+          </div>
+        </div>
+        <div class="productLockup">
+          <img class="productLogo" src="paychekx-logo.png" alt="PAYCHEKX" />
+        </div>
+      </div>
+    </header>
+
+    <main class="context">
+      <div class="horizon" aria-hidden="true"></div>
+
+      <section class="payload" aria-label="PAYCHEKX tool">
+        <div class="titleBlock">
+          <h1 class="artifactTitle">Bill Triage Board</h1>
+          <p class="artifactSub">
+            A PAYCHEKX financial clarity tool. Sort bills into a triage board based on damage risk and immediacy.
+            Nothing is saved, no accounts, no tracking.
+          </p>
+        </div>
+
+        <div class="stage">
+          <div class="toolCard" aria-label="Tool card">
+            <div class="toolInner">
+
+              <div class="grid3">
+                <div class="panel">
+                  <p class="sectionTitle">A. Your month context</p>
+                  <p class="sectionHint">This helps compute what is survivable right now.</p>
+
+                  <label for="income">Monthly take home income</label>
+                  <input id="income" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Example: 2600" />
+
+                  <label for="baseline">Baseline essentials (without these bills)</label>
+                  <input id="baseline" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Example: 1900" />
+                  <div class="hint">Food, rent if not in bills, gas, insurance, phone. Your true baseline.</div>
+
+                  <div class="btnrow">
+                    <button id="addBillBtn" type="button">Add a bill</button>
+                    <button id="buildBtn" type="button">Build triage board</button>
+                    <button id="resetBtn" class="secondary" type="button">Reset</button>
+                  </div>
+
+                  <div class="error" id="errorBox"></div>
+                </div>
+
+                <div class="panel">
+                  <p class="sectionTitle">B. Bills list</p>
+                  <p class="sectionHint">Add bills that are competing for your money this month.</p>
+
+                  <div class="items" id="billList"></div>
+
+                  <div class="sectionHint" style="margin-top:12px;">Categories you can use:</div>
+                  <div class="items" style="margin-top:10px;">
+                    <div class="tag">Housing</div>
+                    <div class="tag">Utilities</div>
+                    <div class="tag">Transportation</div>
+                    <div class="tag">Insurance</div>
+                    <div class="tag">Phone</div>
+                    <div class="tag">Debt</div>
+                    <div class="tag">Other</div>
+                  </div>
+                </div>
+
+                <div class="panel">
+                  <p class="sectionTitle">C. How triage works</p>
+                  <p class="sectionHint">The board sorts based on damage risk and time sensitivity.</p>
+
+                  <div class="board">
+                    <div class="rowLine"><b>Tier 1, must pay</b><span>Direct damage if missed. Keep housing, heat, work mobility alive.</span></div>
+                    <div class="rowLine"><b>Tier 2, should pay</b><span>Meaningful consequences, but survivable if delayed short term.</span></div>
+                    <div class="rowLine"><b>Tier 3, can delay</b><span>Low immediate damage or negotiable without collapse.</span></div>
+                    <div class="rowLine"><b>Tier 4, cut or freeze</b><span>Non essential, pause until margin stabilizes.</span></div>
+                  </div>
+
+                  <div class="hint" style="margin-top:12px;">
+                    This tool does not provide advice. It applies a consistent prioritization logic to your inputs.
+                  </div>
+                </div>
+              </div>
+
+              <div class="resultWrap" id="resultCard">
+                <div class="result">
+                  <div class="zone" id="zoneBar">
+                    <div class="icon" id="zoneIcon">•</div>
+                    <div>
+                      <h2 id="zoneTitle">Result</h2>
+                      <p id="zoneText">Enter your numbers and build the board.</p>
+                    </div>
+                  </div>
+
+                  <div class="metrics">
+                    <div class="metric">
+                      <p class="k">Tier 1 total</p>
+                      <p class="v" id="mT1">$0.00</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Tier 2 total</p>
+                      <p class="v" id="mT2">$0.00</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Tier 3 total</p>
+                      <p class="v" id="mT3">$0.00</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Tier 4 total</p>
+                      <p class="v" id="mT4">$0.00</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel" style="margin-top:12px;">
+                  <p class="sectionTitle">D. Triage board output</p>
+                  <p class="sectionHint">This is the sorted list. Follow it during the month.</p>
+
+                  <div class="board" id="boardOut"></div>
+
+                  <div class="hint" style="margin-top:12px;">
+                    This output uses your baseline to estimate survivability, not correctness.
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      PAYCHEKX is an everyday financial clarity toolset. Powered by AICV. This tool does not provide financial advice.
+      It reflects the inputs you enter for private use.
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function money(n){
+      if (!isFinite(n)) return "$0.00";
+      const sign = n < 0 ? "-" : "";
+      const abs = Math.abs(n);
+      return sign + "$" + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function parseAmount(val){
+      const raw = String(val || "").trim();
+      if (raw === "") return NaN;
+      const n = Number(raw.replace(/[^0-9.\-]/g, ""));
+      return isFinite(n) ? n : NaN;
+    }
+
+    function showError(msg){
+      const box = $("errorBox");
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+
+    function clearError(){
+      const box = $("errorBox");
+      box.textContent = "";
+      box.style.display = "none";
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // Bills: { name, amount, category, urgency, negotiable }
+    // category: "housing"|"utilities"|"transport"|"insurance"|"phone"|"debt"|"other"
+    // urgency: "now"|"soon"|"later"
+    // negotiable: boolean
+    const bills = [];
+
+    function catLabel(c){
+      const map = {
+        housing:"Housing",
+        utilities:"Utilities",
+        transport:"Transportation",
+        insurance:"Insurance",
+        phone:"Phone/Internet",
+        debt:"Debt",
+        other:"Other"
+      };
+      return map[c] || "Other";
+    }
+
+    function tierFor(b){
+      // scoring logic
+      // - category damage risk
+      // - urgency
+      // - negotiability
+      let score = 0;
+
+      // category base
+      if (b.category === "housing") score += 5;
+      else if (b.category === "utilities") score += 4;
+      else if (b.category === "transport") score += 4;
+      else if (b.category === "insurance") score += 3;
+      else if (b.category === "phone") score += 2.5;
+      else if (b.category === "debt") score += 3;
+      else score += 2;
+
+      // urgency
+      if (b.urgency === "now") score += 3;
+      else if (b.urgency === "soon") score += 2;
+      else score += 1;
+
+      // negotiable reduces pressure
+      if (b.negotiable) score -= 1.2;
+
+      // amount mild effect
+      const amt = Number(b.amount) || 0;
+      score += Math.min(2.0, Math.sqrt(Math.max(0, amt)) / 60);
+
+      // map to tier
+      if (score >= 8.0) return 1;
+      if (score >= 6.2) return 2;
+      if (score >= 4.8) return 3;
+      return 4;
+    }
+
+    function addBillRow(){
+      const name = prompt("Bill name (example: rent):", "");
+      if (name === null) return;
+
+      const amtStr = prompt("Amount (number):", "");
+      if (amtStr === null) return;
+
+      const amt = parseAmount(amtStr);
+      if (!isFinite(amt) || amt < 0){
+        alert("Please enter a valid amount (0 or higher).");
+        return;
+      }
+
+      const cat = prompt("Category: housing, utilities, transport, insurance, phone, debt, or other", "other");
+      if (cat === null) return;
+      const c = String(cat).trim().toLowerCase();
+      if (!["housing","utilities","transport","insurance","phone","debt","other"].includes(c)){
+        alert("Category must be: housing, utilities, transport, insurance, phone, debt, or other.");
+        return;
+      }
+
+      const urg = prompt("Urgency: now, soon, or later", "soon");
+      if (urg === null) return;
+      const u = String(urg).trim().toLowerCase();
+      if (!["now","soon","later"].includes(u)){
+        alert("Urgency must be: now, soon, or later.");
+        return;
+      }
+
+      const neg = confirm("Is this negotiable or delayable without immediate collapse? OK = yes, Cancel = no");
+
+      bills.push({ name: String(name).trim(), amount: amt, category: c, urgency: u, negotiable: !!neg });
+      renderBills();
+    }
+
+    function renderBills(){
+      const list = $("billList");
+      list.innerHTML = "";
+
+      if (bills.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "hint";
+        empty.style.marginTop = "10px";
+        empty.textContent = "No bills yet. Add bills to build the triage board.";
+        list.appendChild(empty);
+        return;
+      }
+
+      bills.forEach((b, idx) => {
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const left = document.createElement("div");
+        left.innerHTML = `<div style="font-weight:950; letter-spacing:-0.01em;">${escapeHtml(b.name || "Bill")}</div>
+                          <div class="mini">${catLabel(b.category)} , urgency ${escapeHtml(b.urgency)} , ${b.negotiable ? "negotiable" : "not negotiable"}</div>`;
+
+        const amt = document.createElement("div");
+        amt.innerHTML = `<div style="font-weight:950;">${money(Number(b.amount)||0)}</div>
+                         <div class="mini">Amount</div>`;
+
+        const tier = document.createElement("div");
+        tier.innerHTML = `<div style="font-weight:950;">Tier ${tierFor(b)}</div>
+                          <div class="mini">Triage</div>`;
+
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "remove";
+        edit.textContent = "Edit";
+        edit.addEventListener("click", () => openEdit(idx));
+
+        row.appendChild(left);
+        row.appendChild(amt);
+        row.appendChild(tier);
+        row.appendChild(edit);
+
+        list.appendChild(row);
+      });
+    }
+
+    function openEdit(idx){
+      const b = bills[idx];
+
+      const name = prompt("Bill name:", b.name || "");
+      if (name === null) return;
+
+      const amtStr = prompt("Amount (number):", String(b.amount || ""));
+      if (amtStr === null) return;
+
+      const amt = parseAmount(amtStr);
+      if (!isFinite(amt) || amt < 0){
+        alert("Please enter a valid amount (0 or higher).");
+        return;
+      }
+
+      const cat = prompt("Category: housing, utilities, transport, insurance, phone, debt, or other", b.category || "other");
+      if (cat === null) return;
+      const c = String(cat).trim().toLowerCase();
+      if (!["housing","utilities","transport","insurance","phone","debt","other"].includes(c)){
+        alert("Category must be: housing, utilities, transport, insurance, phone, debt, or other.");
+        return;
+      }
+
+      const urg = prompt("Urgency: now, soon, or later", b.urgency || "soon");
+      if (urg === null) return;
+      const u = String(urg).trim().toLowerCase();
+      if (!["now","soon","later"].includes(u)){
+        alert("Urgency must be: now, soon, or later.");
+        return;
+      }
+
+      const neg = confirm("Is this negotiable or delayable without immediate collapse? OK = yes, Cancel = no");
+
+      bills[idx] = { name: String(name).trim(), amount: amt, category: c, urgency: u, negotiable: !!neg };
+      renderBills();
+    }
+
+    function build(){
+      clearError();
+
+      if (bills.length === 0){
+        showError("Add at least one bill to build a triage board.");
+        return;
+      }
+
+      const incomeRaw = String($("income").value || "").trim();
+      const baselineRaw = String($("baseline").value || "").trim();
+
+      let margin = NaN;
+      if (incomeRaw !== "" || baselineRaw !== ""){
+        const income = parseAmount(incomeRaw);
+        const baseline = parseAmount(baselineRaw);
+
+        if (!isFinite(income) || income <= 0){
+          showError("If you enter month context fields, income must be greater than 0.");
+          return;
+        }
+        if (!isFinite(baseline) || baseline < 0){
+          showError("Baseline essentials must be 0 or higher.");
+          return;
+        }
+        margin = income - baseline;
+      }
+
+      // Assign tiers, then sort by tier asc, then amount desc
+      const enriched = bills.map(b => ({ ...b, tier: tierFor(b) }));
+      enriched.sort((a,b) => (a.tier - b.tier) || ((Number(b.amount)||0) - (Number(a.amount)||0)));
+
+      const tTotals = [0,0,0,0,0];
+      enriched.forEach(b => { tTotals[b.tier] += (Number(b.amount)||0); });
+
+      // Zone
+      let zone = "safe";
+      let icon = "✓";
+      let title = "Triage board built.";
+      let text  = "Based on your inputs, bills are sorted by damage risk and immediacy.";
+
+      const totalBills = enriched.reduce((s,b) => s + (Number(b.amount)||0), 0);
+
+      if (!isFinite(margin)){
+        zone = "tight";
+        icon = "•";
+        title = "Board built, but survivability is unknown.";
+        text  = "You did not enter income and baseline essentials. The triage still works, but budget survivability is unknown.";
+      } else {
+        const after = margin - totalBills;
+        if (after < 0){
+          zone = "danger";
+          icon = "!";
+          title = "Your bills exceed your available margin.";
+          text  = "Based on what you entered, you cannot cover everything. Use the tiers as the order of sacrifice.";
+        } else if (after < 0.08 * Math.max(1, margin)){
+          zone = "tight";
+          icon = "•";
+          title = "You can cover bills, but slack is very tight.";
+          text  = "Based on what you entered, you can cover the list, but one surprise can destabilize the month.";
+        }
+      }
+
+      const zoneBar = $("zoneBar");
+      zoneBar.classList.remove("safe","tight","danger");
+      zoneBar.classList.add(zone);
+      $("zoneIcon").textContent = icon;
+      $("zoneTitle").textContent = title;
+      $("zoneText").textContent = text;
+
+      $("mT1").textContent = money(tTotals[1]);
+      $("mT2").textContent = money(tTotals[2]);
+      $("mT3").textContent = money(tTotals[3]);
+      $("mT4").textContent = money(tTotals[4]);
+
+      // Output board
+      const out = $("boardOut");
+      out.innerHTML = "";
+
+      function block(label, tier){
+        const box = document.createElement("div");
+        box.className = "rowLine";
+        box.innerHTML = `<b>${escapeHtml(label)}</b><span>${money(tTotals[tier])} total</span>`;
+        out.appendChild(box);
+
+        enriched.filter(x => x.tier === tier).forEach(x => {
+          const row = document.createElement("div");
+          row.className = "rowLine";
+          row.innerHTML = `<b>${escapeHtml(x.name || "Bill")}</b><span>${money(Number(x.amount)||0)} , ${catLabel(x.category)} , urgency ${escapeHtml(x.urgency)}${x.negotiable ? " , negotiable" : ""}</span>`;
+          out.appendChild(row);
+        });
+      }
+
+      block("Tier 1, must pay", 1);
+      block("Tier 2, should pay", 2);
+      block("Tier 3, can delay", 3);
+      block("Tier 4, cut or freeze", 4);
+
+      if (isFinite(margin)){
+        const totalBills = enriched.reduce((s,b) => s + (Number(b.amount)||0), 0);
+        const after = margin - totalBills;
+        const row = document.createElement("div");
+        row.className = "rowLine";
+        row.innerHTML = `<b>Margin after bills</b><span>${money(after)}</span>`;
+        out.appendChild(row);
+      }
+
+      $("resultCard").style.display = "block";
+      $("resultCard").scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function resetAll(){
+      clearError();
+      $("income").value = "";
+      $("baseline").value = "";
+      bills.length = 0;
+      renderBills();
+      $("resultCard").style.display = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    $("addBillBtn").addEventListener("click", addBillRow);
+    $("buildBtn").addEventListener("click", build);
+    $("resetBtn").addEventListener("click", resetAll);
+
+    renderBills();
+  </script>
+</body>
+</html>

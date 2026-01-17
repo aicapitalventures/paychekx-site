@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PAYCHEKX, Hidden Bills & Subscription Finder | AICV</title>
+
+  <!-- REQUIRED FILES (same folder as this HTML)
+       1) favicon.ico                  (PAYCHEKX favicon)
+       2) aicv-mark.png                (AICV authority mark image)
+       3) paychekx-logo.png            (PAYCHEKX product line logo image)
+       4) aicv-glyph.svg               (AICV triangle glyph watermark tile)
+  -->
+
+  <link rel="icon" href="favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#060814;
+      --bg2:#04050d;
+      --text:#f3f6ff;
+      --muted:rgba(220, 230, 255, 0.72);
+      --muted2:rgba(220, 230, 255, 0.55);
+      --line:rgba(95, 116, 180, 0.22);
+      --shadow: 0 18px 50px rgba(0,0,0,0.55);
+      --radius:18px;
+      --good:rgba(34,197,94,0.16);
+      --warn:rgba(234,179,8,0.16);
+      --bad: rgba(239,68,68,0.16);
+      --panel: rgba(10, 12, 26, 0.62);
+      --panel2:#0b1022;
+      --panel3:#070b19;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 50% -10%, rgba(34, 188, 255, 0.18), transparent 55%),
+                  radial-gradient(900px 600px at 10% 30%, rgba(85, 140, 255, 0.12), transparent 55%),
+                  radial-gradient(900px 600px at 90% 25%, rgba(80, 255, 200, 0.08), transparent 60%),
+                  linear-gradient(180deg, var(--bg2), var(--bg));
+      overflow-x:hidden;
+    }
+
+    .frame{ min-height:100vh; display:flex; flex-direction:column; position:relative; isolation:isolate; }
+
+    /* Authority Header Zone */
+    .authority{
+      position:relative; z-index:5;
+      padding:18px 16px 12px;
+      max-width:1060px; margin:0 auto; width:100%;
+    }
+    .authorityBar{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.55);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 34px rgba(0,0,0,0.32);
+    }
+    .aicvLockup{ display:flex; align-items:center; gap:12px; min-width:240px; }
+    .aicvMark{
+      width:44px; height:44px; object-fit:contain;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.55));
+    }
+    .aicvText{ display:flex; flex-direction:column; line-height:1.05; }
+    .aicvName{
+      font-weight:900; letter-spacing:0.08em; font-size:12px;
+      color:rgba(235, 245, 255, 0.92); text-transform:uppercase;
+    }
+    .aicvTag{
+      margin-top:6px; font-size:11px; letter-spacing:0.16em;
+      text-transform:uppercase; color:rgba(220, 230, 255, 0.58); white-space:nowrap;
+    }
+    .productLockup{ display:flex; align-items:center; justify-content:flex-end; gap:12px; min-width:240px; }
+    .productLogo{
+      height:34px; width:auto; object-fit:contain;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55));
+    }
+
+    /* Context Field */
+    .context{
+      position:relative; z-index:1; flex:1;
+      display:flex; align-items:center; justify-content:center;
+      padding:22px 16px 60px;
+    }
+    .context::before{
+      content:""; position:absolute; inset:0;
+      background:
+        radial-gradient(1px 1px at 20% 35%, rgba(255,255,255,0.28), transparent 55%),
+        radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.22), transparent 55%),
+        radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.18), transparent 55%),
+        radial-gradient(1px 1px at 80% 30%, rgba(255,255,255,0.20), transparent 55%),
+        radial-gradient(2px 2px at 30% 70%, rgba(64,220,255,0.15), transparent 60%),
+        radial-gradient(2px 2px at 70% 65%, rgba(60,130,255,0.12), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 35%, rgba(255,255,255,0.02));
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .context::after{
+      content:""; position:absolute; inset:0;
+      background-image:url("aicv-glyph.svg");
+      background-repeat:repeat;
+      background-size:160px 160px;
+      background-position:14px 10px;
+      opacity:0.07;
+      filter:saturate(1.05) brightness(1.08);
+      pointer-events:none; z-index:0;
+    }
+
+    .horizon{
+      position:absolute; left:0; right:0; bottom:0; height:220px;
+      pointer-events:none; z-index:1;
+      background:
+        radial-gradient(70% 60% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(60% 50% at 50% 55%, rgba(40,120,255,0.14), transparent 62%),
+        linear-gradient(180deg, transparent 0%, rgba(4, 6, 14, 0.25) 40%, rgba(4, 6, 14, 0.72) 100%);
+    }
+    .horizon::before{
+      content:""; position:absolute; left:10%; right:10%; bottom:70px; height:2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(64,220,255,0.75) 30%, rgba(80,255,200,0.35) 50%, rgba(40,120,255,0.75) 70%, transparent 100%);
+      opacity:0.75;
+    }
+    .horizon::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:120px;
+      background: linear-gradient(180deg, rgba(6,8,20,0.0), rgba(6,8,20,0.7) 55%, rgba(6,8,20,0.92));
+    }
+
+    .payload{
+      position:relative; z-index:3;
+      width:min(900px, 100%); margin:0 auto;
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+    }
+
+    .titleBlock{
+      width:100%;
+      padding:18px 18px 10px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.38);
+    }
+    .artifactTitle{ margin:0; font-size:26px; letter-spacing:-0.02em; font-weight:950; }
+    .artifactSub{ margin:8px 0 0; font-size:13px; color:var(--muted); line-height:1.45; }
+
+    .stage{ position:relative; width:100%; padding-bottom:26px; }
+    .stage::before{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:18px;
+      width:min(800px, 92%); height:240px;
+      background:
+        radial-gradient(60% 50% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(55% 50% at 50% 55%, rgba(40,120,255,0.12), transparent 65%),
+        radial-gradient(65% 60% at 50% 90%, rgba(0,0,0,0.62), transparent 70%);
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .stage::after{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:185px;
+      width:min(760px, 90%); height:26px; border-radius:999px;
+      background: radial-gradient(closest-side, rgba(64,220,255,0.35), rgba(40,120,255,0.16), transparent 70%);
+      filter: blur(6px); opacity:0.55; pointer-events:none; z-index:0;
+    }
+
+    .toolCard{
+      position:relative; z-index:2; width:100%;
+      border-radius: var(--radius);
+      border:1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .toolCard::before{
+      content:""; position:absolute; inset:-1px;
+      background:
+        radial-gradient(820px 240px at 50% 0%, rgba(64,220,255,0.16), transparent 60%),
+        radial-gradient(650px 260px at 10% 0%, rgba(80,255,200,0.08), transparent 65%),
+        radial-gradient(650px 260px at 90% 0%, rgba(40,120,255,0.10), transparent 65%);
+      pointer-events:none; z-index:0;
+    }
+    .toolInner{ position:relative; z-index:1; padding:16px; }
+
+    .grid2{ display:grid; grid-template-columns: 1.2fr 0.8fr; gap:12px; }
+    @media (max-width:720px){ .grid2{ grid-template-columns: 1fr; } }
+
+    .panel{
+      border:1px solid rgba(120,140,210,0.22);
+      background: rgba(11,16,34,0.82);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    label{ display:block; font-size:13px; color:var(--muted2); margin:10px 0 6px; }
+    input[type="text"], input[type="number"], select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+    }
+    input[type="number"]{ appearance:textfield; }
+    select{ cursor:pointer; }
+
+    .hint{ font-size:12.5px; color:rgba(220, 230, 255, 0.58); line-height:1.45; margin-top:8px; }
+
+    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    button{
+      border:1px solid rgba(120,140,210,0.22);
+      background: linear-gradient(180deg, rgba(18, 24, 52, 0.95), rgba(10, 12, 26, 0.95));
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:12px;
+      font-weight:900;
+      font-size:14px;
+      cursor:pointer;
+      flex:1 1 160px;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.35);
+    }
+    button.secondary{
+      background: var(--panel2);
+      color:rgba(220, 230, 255, 0.62);
+      box-shadow:none;
+      font-weight:900;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .error{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:rgba(255, 150, 175, 0.95);
+      font-weight:800;
+      display:none;
+    }
+
+    .items{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+    .item{
+      border:1px solid rgba(120,140,210,0.18);
+      background: rgba(7,11,25,0.86);
+      border-radius:14px;
+      padding:12px;
+      display:grid;
+      grid-template-columns: 1.2fr 0.6fr 0.6fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .item .mini{ font-size:12px; color:rgba(220, 230, 255, 0.58); margin-top:4px; }
+    .pill{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: rgba(11,16,34,0.82);
+      font-weight:900; font-size:12px; color:rgba(220,230,255,0.78);
+      white-space:nowrap;
+    }
+    .remove{
+      padding:10px 12px; border-radius:10px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      color:rgba(220, 230, 255, 0.62);
+      font-weight:900; cursor:pointer; white-space:nowrap;
+      box-shadow:none;
+    }
+    @media (max-width:760px){
+      .item{ grid-template-columns: 1fr 1fr; }
+      .item .remove{ grid-column: 1 / -1; width:100%; }
+    }
+
+    .resultWrap{ margin-top:12px; display:none; }
+    .result{
+      border-radius:16px;
+      border:1px solid rgba(120,140,210,0.22);
+      overflow:hidden;
+      background: rgba(10,12,26,0.55);
+    }
+    .zone{
+      padding:14px;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      position:relative;
+    }
+    .zone .icon{
+      width:36px; height:36px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      flex:0 0 auto;
+    }
+    .zone h2{ margin:0; font-size:18px; letter-spacing:-0.01em; }
+    .zone p{ margin:6px 0 0; color:rgba(220, 230, 255, 0.70); line-height:1.45; }
+
+    .metrics{
+      padding:12px 14px 14px;
+      border-top:1px solid rgba(120,140,210,0.22);
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:10px;
+      background: var(--panel2);
+    }
+    .metric{
+      border:1px solid rgba(120,140,210,0.18);
+      background: var(--panel3);
+      border-radius:14px;
+      padding:10px;
+    }
+    .metric .k{ color:rgba(220, 230, 255, 0.58); font-size:12px; margin:0 0 6px; }
+    .metric .v{ font-size:18px; font-weight:950; margin:0; }
+
+    .zone.safe  { background: linear-gradient(90deg, var(--good), rgba(10,12,26,0.0)); }
+    .zone.tight { background: linear-gradient(90deg, var(--warn), rgba(10,12,26,0.0)); }
+    .zone.danger{ background: linear-gradient(90deg, var(--bad), rgba(10,12,26,0.0)); }
+
+    .foot{
+      margin-top:12px;
+      padding:12px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      color:rgba(220, 230, 255, 0.62);
+      font-size:12.5px;
+      line-height:1.5;
+      max-width:1060px;
+      margin-left:auto;
+      margin-right:auto;
+      margin-bottom:22px;
+    }
+
+    @media (max-width: 520px){
+      .aicvTag{ display:none; }
+      .productLogo{ height:30px; }
+      .metrics{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="frame">
+    <header class="authority">
+      <div class="authorityBar">
+        <div class="aicvLockup">
+          <img class="aicvMark" src="aicv-mark.png" alt="AICV" />
+          <div class="aicvText">
+            <div class="aicvName">AICV</div>
+            <div class="aicvTag">ARTIFICIAL INTELLIGENCE CAPITAL VENTURES</div>
+          </div>
+        </div>
+        <div class="productLockup">
+          <img class="productLogo" src="paychekx-logo.png" alt="PAYCHEKX" />
+        </div>
+      </div>
+    </header>
+
+    <main class="context">
+      <div class="horizon" aria-hidden="true"></div>
+
+      <section class="payload" aria-label="PAYCHEKX tool">
+        <div class="titleBlock">
+          <h1 class="artifactTitle">Hidden Bills and Subscription Finder</h1>
+          <p class="artifactSub">
+            A PAYCHEKX financial clarity tool. List recurring charges you might be forgetting, then see the real monthly total.
+            Nothing is saved, no accounts, no tracking.
+          </p>
+        </div>
+
+        <div class="stage">
+          <div class="toolCard" aria-label="Tool card">
+            <div class="toolInner">
+              <div class="grid2">
+                <div class="panel">
+                  <div style="font-weight:950; letter-spacing:-0.01em;">Add a recurring charge</div>
+                  <div class="hint" style="margin-top:6px;">
+                    Think small. Streaming, apps, memberships, insurance add ons, storage, warranties, subscriptions.
+                  </div>
+
+                  <label for="name">Charge name</label>
+                  <input id="name" type="text" placeholder="Example: Netflix" />
+
+                  <label for="amount">Amount</label>
+                  <input id="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Example: 14.99" />
+
+                  <label for="freq">Frequency</label>
+                  <select id="freq">
+                    <option value="monthly" selected>Monthly</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+
+                  <div class="btnrow">
+                    <button id="addBtn" type="button">Add</button>
+                    <button id="analyzeBtn" type="button">Analyze</button>
+                    <button id="resetBtn" class="secondary" type="button">Reset</button>
+                  </div>
+
+                  <div class="error" id="errorBox"></div>
+
+                  <div class="hint" style="margin-top:12px;">
+                    Tip: If you are not sure, estimate high. This is a clarity tool.
+                  </div>
+                </div>
+
+                <div class="panel">
+                  <div style="font-weight:950; letter-spacing:-0.01em;">Quick prompts</div>
+                  <div class="hint" style="margin-top:6px;">
+                    Use this list to remember charges you may not think about daily.
+                  </div>
+
+                  <div class="items" style="margin-top:10px;">
+                    <div class="pill">Streaming and music</div>
+                    <div class="pill">Phone add ons</div>
+                    <div class="pill">Cloud storage</div>
+                    <div class="pill">Gym and memberships</div>
+                    <div class="pill">Delivery memberships</div>
+                    <div class="pill">Apps and subscriptions</div>
+                    <div class="pill">Insurance add ons</div>
+                    <div class="pill">Warranties and protection plans</div>
+                  </div>
+
+                  <div class="hint" style="margin-top:12px;">
+                    This tool does not connect to your bank. You enter what you remember.
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel" style="margin-top:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                  <div style="font-weight:950; letter-spacing:-0.01em;">Your list</div>
+                  <div class="hint" style="margin:0;">Nothing is saved. Use Reset to clear.</div>
+                </div>
+
+                <div class="items" id="list"></div>
+              </div>
+
+              <div class="resultWrap" id="resultCard">
+                <div class="result">
+                  <div class="zone" id="zoneBar">
+                    <div class="icon" id="zoneIcon">•</div>
+                    <div>
+                      <h2 id="zoneTitle">Result</h2>
+                      <p id="zoneText">Add your recurring charges, then analyze.</p>
+                    </div>
+                  </div>
+
+                  <div class="metrics">
+                    <div class="metric">
+                      <p class="k">Recurring items listed</p>
+                      <p class="v" id="mCount">0</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Monthly total</p>
+                      <p class="v" id="mMonthly">$0.00</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Yearly total</p>
+                      <p class="v" id="mYearly">$0.00</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="hint" style="margin-top:10px;">
+                  This tool does not provide financial advice. It reflects what your list indicates right now.
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      PAYCHEKX is an everyday financial clarity toolset. Powered by AICV. This tool does not connect to your bank.
+      It reflects the inputs you enter for private use.
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function money(n){
+      if (!isFinite(n)) return "$0.00";
+      const sign = n < 0 ? "-" : "";
+      const abs = Math.abs(n);
+      return sign + "$" + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function parseAmount(val){
+      const n = Number(String(val).replace(/[^0-9.\-]/g, ""));
+      return isFinite(n) ? n : 0;
+    }
+
+    function showError(msg){
+      const box = $("errorBox");
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+
+    function clearError(){
+      const box = $("errorBox");
+      box.textContent = "";
+      box.style.display = "none";
+    }
+
+    const items = [];
+
+    function freqToMonthly(amount, freq){
+      if (freq === "monthly") return amount;
+      if (freq === "weekly")  return amount * 4.33;   // average weeks per month
+      if (freq === "yearly")  return amount / 12;
+      return amount;
+    }
+
+    function freqLabel(freq){
+      if (freq === "monthly") return "Monthly";
+      if (freq === "weekly") return "Weekly";
+      if (freq === "yearly") return "Yearly";
+      return "Monthly";
+    }
+
+    function renderList(){
+      const list = $("list");
+      list.innerHTML = "";
+
+      if (items.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "hint";
+        empty.style.marginTop = "10px";
+        empty.textContent = "No items yet. Add a recurring charge to begin.";
+        list.appendChild(empty);
+        return;
+      }
+
+      items.forEach((it, idx) => {
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const left = document.createElement("div");
+        left.innerHTML = `<div style="font-weight:950; letter-spacing:-0.01em;">${escapeHtml(it.name)}</div>
+                          <div class="mini">${freqLabel(it.freq)} charge</div>`;
+
+        const amt = document.createElement("div");
+        amt.innerHTML = `<div style="font-weight:950;">${money(it.amount)}</div>
+                         <div class="mini">Entered</div>`;
+
+        const est = document.createElement("div");
+        const monthly = freqToMonthly(it.amount, it.freq);
+        est.innerHTML = `<div style="font-weight:950;">${money(monthly)}</div>
+                         <div class="mini">Monthly impact</div>`;
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "remove";
+        del.textContent = "Remove";
+        del.addEventListener("click", () => {
+          items.splice(idx, 1);
+          renderList();
+          renderResult(false);
+        });
+
+        row.appendChild(left);
+        row.appendChild(amt);
+        row.appendChild(est);
+        row.appendChild(del);
+
+        list.appendChild(row);
+      });
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function analyze(){
+      clearError();
+
+      if (items.length === 0){
+        showError("Add at least one recurring charge before analyzing.");
+        return;
+      }
+
+      let monthlyTotal = 0;
+      for (const it of items){
+        monthlyTotal += freqToMonthly(it.amount, it.freq);
+      }
+
+      const yearlyTotal = monthlyTotal * 12;
+
+      let zone = "safe";
+      let icon = "✓";
+      let title = "Your recurring total is visible now.";
+      let text  = "You have a clear picture of recurring charges based on what you listed.";
+
+      // Simple, mass-market thresholds (non-advice, just signal)
+      if (monthlyTotal >= 200){
+        zone = "danger";
+        icon = "!";
+        title = "This is a meaningful monthly load.";
+        text  = "Based on your list, recurring charges are taking a serious chunk each month. This is where silent money leaks often hide.";
+      } else if (monthlyTotal >= 80){
+        zone = "tight";
+        icon = "•";
+        title = "This adds up faster than most people expect.";
+        text  = "Based on your list, recurring charges are not huge individually, but the combined monthly total matters.";
+      }
+
+      renderResult(true, { monthlyTotal, yearlyTotal, zone, icon, title, text });
+    }
+
+    function renderResult(show, data){
+      const card = $("resultCard");
+      if (!show){
+        card.style.display = "none";
+        return;
+      }
+
+      const { monthlyTotal, yearlyTotal, zone, icon, title, text } = data;
+
+      const zoneBar = $("zoneBar");
+      zoneBar.classList.remove("safe", "tight", "danger");
+      zoneBar.classList.add(zone);
+
+      $("zoneIcon").textContent = icon;
+      $("zoneTitle").textContent = title;
+      $("zoneText").textContent = text;
+
+      $("mCount").textContent = String(items.length);
+      $("mMonthly").textContent = money(monthlyTotal);
+      $("mYearly").textContent = money(yearlyTotal);
+
+      card.style.display = "block";
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function addItem(){
+      clearError();
+
+      const name = String($("name").value || "").trim();
+      const amount = parseAmount($("amount").value);
+      const freq = $("freq").value;
+
+      if (!name){
+        showError("Enter a charge name.");
+        return;
+      }
+      if (!(amount > 0)){
+        showError("Enter an amount greater than 0.");
+        return;
+      }
+
+      items.push({ name, amount, freq });
+
+      $("name").value = "";
+      $("amount").value = "";
+      $("freq").value = "monthly";
+
+      renderList();
+      renderResult(false);
+    }
+
+    function resetAll(){
+      clearError();
+      items.length = 0;
+      $("name").value = "";
+      $("amount").value = "";
+      $("freq").value = "monthly";
+      renderList();
+      renderResult(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    $("addBtn").addEventListener("click", addItem);
+    $("analyzeBtn").addEventListener("click", analyze);
+    $("resetBtn").addEventListener("click", resetAll);
+
+    // Convenience: Enter key on amount adds item
+    $("amount").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") addItem();
+    });
+
+    renderList();
+  </script>
+</body>
+</html>

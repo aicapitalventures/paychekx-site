@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PAYCHEKX, Bill Shock Buffer Builder | AICV</title>
+
+  <!-- REQUIRED FILES (same folder as this HTML)
+       1) favicon.ico                  (PAYCHEKX favicon)
+       2) aicv-mark.png                (AICV authority mark image)
+       3) paychekx-logo.png            (PAYCHEKX product line logo image)
+       4) aicv-glyph.svg               (AICV triangle glyph watermark tile)
+  -->
+
+  <link rel="icon" href="favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#060814;
+      --bg2:#04050d;
+      --text:#f3f6ff;
+      --muted:rgba(220, 230, 255, 0.72);
+      --muted2:rgba(220, 230, 255, 0.55);
+      --line:rgba(95, 116, 180, 0.22);
+      --shadow: 0 18px 50px rgba(0,0,0,0.55);
+      --radius:18px;
+
+      --good:rgba(34,197,94,0.16);
+      --warn:rgba(234,179,8,0.16);
+      --bad: rgba(239,68,68,0.16);
+
+      --panel: rgba(10, 12, 26, 0.62);
+      --panel2:#0b1022;
+      --panel3:#070b19;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 50% -10%, rgba(34, 188, 255, 0.18), transparent 55%),
+                  radial-gradient(900px 600px at 10% 30%, rgba(85, 140, 255, 0.12), transparent 55%),
+                  radial-gradient(900px 600px at 90% 25%, rgba(80, 255, 200, 0.08), transparent 60%),
+                  linear-gradient(180deg, var(--bg2), var(--bg));
+      overflow-x:hidden;
+    }
+
+    .frame{ min-height:100vh; display:flex; flex-direction:column; position:relative; isolation:isolate; }
+
+    /* Authority Header Zone */
+    .authority{
+      position:relative; z-index:5;
+      padding:18px 16px 12px;
+      max-width:1060px; margin:0 auto; width:100%;
+    }
+    .authorityBar{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.55);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 34px rgba(0,0,0,0.32);
+    }
+    .aicvLockup{ display:flex; align-items:center; gap:12px; min-width:240px; }
+    .aicvMark{
+      width:44px; height:44px; object-fit:contain;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.55));
+    }
+    .aicvText{ display:flex; flex-direction:column; line-height:1.05; }
+    .aicvName{
+      font-weight:900; letter-spacing:0.08em; font-size:12px;
+      color:rgba(235, 245, 255, 0.92); text-transform:uppercase;
+    }
+    .aicvTag{
+      margin-top:6px; font-size:11px; letter-spacing:0.16em;
+      text-transform:uppercase; color:rgba(220, 230, 255, 0.58); white-space:nowrap;
+    }
+    .productLockup{ display:flex; align-items:center; justify-content:flex-end; gap:12px; min-width:240px; }
+    .productLogo{
+      height:34px; width:auto; object-fit:contain;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55));
+    }
+
+    /* Context Field */
+    .context{
+      position:relative; z-index:1; flex:1;
+      display:flex; align-items:center; justify-content:center;
+      padding:22px 16px 60px;
+    }
+    .context::before{
+      content:""; position:absolute; inset:0;
+      background:
+        radial-gradient(1px 1px at 20% 35%, rgba(255,255,255,0.28), transparent 55%),
+        radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.22), transparent 55%),
+        radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.18), transparent 55%),
+        radial-gradient(1px 1px at 80% 30%, rgba(255,255,255,0.20), transparent 55%),
+        radial-gradient(2px 2px at 30% 70%, rgba(64,220,255,0.15), transparent 60%),
+        radial-gradient(2px 2px at 70% 65%, rgba(60,130,255,0.12), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 35%, rgba(255,255,255,0.02));
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .context::after{
+      content:""; position:absolute; inset:0;
+      background-image:url("aicv-glyph.svg");
+      background-repeat:repeat;
+      background-size:160px 160px;
+      background-position:14px 10px;
+      opacity:0.07;
+      filter:saturate(1.05) brightness(1.08);
+      pointer-events:none; z-index:0;
+    }
+
+    .horizon{
+      position:absolute; left:0; right:0; bottom:0; height:220px;
+      pointer-events:none; z-index:1;
+      background:
+        radial-gradient(70% 60% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(60% 50% at 50% 55%, rgba(40,120,255,0.14), transparent 62%),
+        linear-gradient(180deg, transparent 0%, rgba(4, 6, 14, 0.25) 40%, rgba(4, 6, 14, 0.72) 100%);
+    }
+    .horizon::before{
+      content:""; position:absolute; left:10%; right:10%; bottom:70px; height:2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(64,220,255,0.75) 30%, rgba(80,255,200,0.35) 50%, rgba(40,120,255,0.75) 70%, transparent 100%);
+      opacity:0.75;
+    }
+    .horizon::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:120px;
+      background: linear-gradient(180deg, rgba(6,8,20,0.0), rgba(6,8,20,0.7) 55%, rgba(6,8,20,0.92));
+    }
+
+    .payload{
+      position:relative; z-index:3;
+      width:min(920px, 100%); margin:0 auto;
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+    }
+
+    .titleBlock{
+      width:100%;
+      padding:18px 18px 10px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.38);
+    }
+    .artifactTitle{ margin:0; font-size:26px; letter-spacing:-0.02em; font-weight:950; }
+    .artifactSub{ margin:8px 0 0; font-size:13px; color:var(--muted); line-height:1.45; }
+
+    .stage{ position:relative; width:100%; padding-bottom:26px; }
+    .stage::before{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:18px;
+      width:min(820px, 92%); height:250px;
+      background:
+        radial-gradient(60% 50% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(55% 50% at 50% 55%, rgba(40,120,255,0.12), transparent 65%),
+        radial-gradient(65% 60% at 50% 90%, rgba(0,0,0,0.62), transparent 70%);
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .stage::after{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:195px;
+      width:min(780px, 90%); height:26px; border-radius:999px;
+      background: radial-gradient(closest-side, rgba(64,220,255,0.35), rgba(40,120,255,0.16), transparent 70%);
+      filter: blur(6px); opacity:0.55; pointer-events:none; z-index:0;
+    }
+
+    .toolCard{
+      position:relative; z-index:2; width:100%;
+      border-radius: var(--radius);
+      border:1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .toolCard::before{
+      content:""; position:absolute; inset:-1px;
+      background:
+        radial-gradient(820px 240px at 50% 0%, rgba(64,220,255,0.16), transparent 60%),
+        radial-gradient(650px 260px at 10% 0%, rgba(80,255,200,0.08), transparent 65%),
+        radial-gradient(650px 260px at 90% 0%, rgba(40,120,255,0.10), transparent 65%);
+      pointer-events:none; z-index:0;
+    }
+    .toolInner{ position:relative; z-index:1; padding:16px; }
+
+    .grid2{ display:grid; grid-template-columns: 1.1fr 0.9fr; gap:12px; }
+    @media (max-width:900px){ .grid2{ grid-template-columns: 1fr; } }
+
+    .panel{
+      border:1px solid rgba(120,140,210,0.22);
+      background: rgba(11,16,34,0.82);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .sectionTitle{
+      margin:0;
+      font-size:14px;
+      font-weight:950;
+      letter-spacing:0.01em;
+    }
+    .sectionHint{
+      margin:6px 0 0;
+      font-size:12.5px;
+      color:rgba(220, 230, 255, 0.62);
+      line-height:1.45;
+    }
+
+    label{ display:block; font-size:13px; color:var(--muted2); margin:10px 0 6px; }
+    input[type="text"], input[type="number"], select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+    }
+    input[type="number"]{ appearance:textfield; }
+    select{ cursor:pointer; }
+
+    .hint{ font-size:12.5px; color:rgba(220, 230, 255, 0.58); line-height:1.45; margin-top:8px; }
+
+    .items{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+    .item{
+      border:1px solid rgba(120,140,210,0.18);
+      background: rgba(7,11,25,0.86);
+      border-radius:14px;
+      padding:12px;
+      display:grid;
+      grid-template-columns: 1.1fr 0.6fr 0.7fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .item .mini{ font-size:12px; color:rgba(220, 230, 255, 0.58); margin-top:4px; }
+    .pill{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: rgba(11,16,34,0.82);
+      font-weight:950; font-size:12px; color:rgba(220,230,255,0.78);
+      white-space:nowrap;
+    }
+    .remove{
+      padding:10px 12px; border-radius:10px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      color:rgba(220, 230, 255, 0.62);
+      font-weight:950; cursor:pointer; white-space:nowrap;
+      box-shadow:none;
+    }
+    @media (max-width:760px){
+      .item{ grid-template-columns: 1fr 1fr; }
+      .item .remove{ grid-column: 1 / -1; width:100%; }
+    }
+
+    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    button{
+      border:1px solid rgba(120,140,210,0.22);
+      background: linear-gradient(180deg, rgba(18, 24, 52, 0.95), rgba(10, 12, 26, 0.95));
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:12px;
+      font-weight:950;
+      font-size:14px;
+      cursor:pointer;
+      flex:1 1 160px;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.35);
+    }
+    button.secondary{
+      background: var(--panel2);
+      color:rgba(220, 230, 255, 0.62);
+      box-shadow:none;
+      font-weight:950;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .error{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:rgba(255, 150, 175, 0.95);
+      font-weight:900;
+      display:none;
+    }
+
+    .resultWrap{ margin-top:12px; display:none; }
+    .result{
+      border-radius:16px;
+      border:1px solid rgba(120,140,210,0.22);
+      overflow:hidden;
+      background: rgba(10,12,26,0.55);
+    }
+    .zone{
+      padding:14px;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      position:relative;
+    }
+    .zone .icon{
+      width:36px; height:36px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:950;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      flex:0 0 auto;
+    }
+    .zone h2{ margin:0; font-size:18px; letter-spacing:-0.01em; }
+    .zone p{ margin:6px 0 0; color:rgba(220, 230, 255, 0.70); line-height:1.45; }
+
+    .metrics{
+      padding:12px 14px 14px;
+      border-top:1px solid rgba(120,140,210,0.22);
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:10px;
+      background: var(--panel2);
+    }
+    .metric{
+      border:1px solid rgba(120,140,210,0.18);
+      background: var(--panel3);
+      border-radius:14px;
+      padding:10px;
+    }
+    .metric .k{ color:rgba(220, 230, 255, 0.58); font-size:12px; margin:0 0 6px; }
+    .metric .v{ font-size:18px; font-weight:950; margin:0; }
+
+    .zone.safe  { background: linear-gradient(90deg, var(--good), rgba(10,12,26,0.0)); }
+    .zone.tight { background: linear-gradient(90deg, var(--warn), rgba(10,12,26,0.0)); }
+    .zone.danger{ background: linear-gradient(90deg, var(--bad), rgba(10,12,26,0.0)); }
+
+    .listMini{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .rowLine{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.18);
+      background: rgba(7,11,25,0.86);
+    }
+    .rowLine b{ font-weight:950; }
+    .rowLine span{ color:rgba(220,230,255,0.65); font-size:13px; }
+
+    .foot{
+      margin-top:12px;
+      padding:12px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      color:rgba(220, 230, 255, 0.62);
+      font-size:12.5px;
+      line-height:1.5;
+      max-width:1060px;
+      margin-left:auto;
+      margin-right:auto;
+      margin-bottom:22px;
+    }
+
+    @media (max-width: 520px){
+      .aicvTag{ display:none; }
+      .productLogo{ height:30px; }
+      .metrics{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="frame">
+    <header class="authority">
+      <div class="authorityBar">
+        <div class="aicvLockup">
+          <img class="aicvMark" src="aicv-mark.png" alt="AICV" />
+          <div class="aicvText">
+            <div class="aicvName">AICV</div>
+            <div class="aicvTag">ARTIFICIAL INTELLIGENCE CAPITAL VENTURES</div>
+          </div>
+        </div>
+        <div class="productLockup">
+          <img class="productLogo" src="paychekx-logo.png" alt="PAYCHEKX" />
+        </div>
+      </div>
+    </header>
+
+    <main class="context">
+      <div class="horizon" aria-hidden="true"></div>
+
+      <section class="payload" aria-label="PAYCHEKX tool">
+        <div class="titleBlock">
+          <h1 class="artifactTitle">Bill Shock Buffer Builder</h1>
+          <p class="artifactSub">
+            A PAYCHEKX financial clarity tool. Estimate the buffer you need so small surprises stop wrecking your month.
+            Nothing is saved, no accounts, no tracking.
+          </p>
+        </div>
+
+        <div class="stage">
+          <div class="toolCard" aria-label="Tool card">
+            <div class="toolInner">
+
+              <div class="grid2">
+                <!-- LEFT: Inputs -->
+                <div class="panel">
+                  <p class="sectionTitle">A. Your base situation</p>
+                  <p class="sectionHint">Keep it rough. This tool is about realism, not perfection.</p>
+
+                  <label for="income">Monthly take home income</label>
+                  <input id="income" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Example: 2600" />
+
+                  <label for="baseBills">Fixed bills total per month</label>
+                  <input id="baseBills" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Example: 1400" />
+                  <div class="hint">Rent, insurance, phone, car payment, subscriptions you always pay.</div>
+
+                  <label for="essentials">Essentials total per month</label>
+                  <input id="essentials" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Example: 600" />
+                  <div class="hint">Food, gas, toiletries, required commuting, basic needs.</div>
+
+                  <label for="bufferMode">Buffer mode</label>
+                  <select id="bufferMode">
+                    <option value="minimum" selected>Minimum (just stop the bleeding)</option>
+                    <option value="stable">Stable (reduce shock and stress)</option>
+                    <option value="strong">Strong (more resilient month)</option>
+                  </select>
+
+                  <div class="btnrow">
+                    <button id="addShockBtn" type="button">Add a shock bill</button>
+                    <button id="calcBtn" type="button">Build my buffer</button>
+                    <button id="resetBtn" class="secondary" type="button">Reset</button>
+                  </div>
+
+                  <div class="error" id="errorBox"></div>
+
+                  <div class="hint" style="margin-top:12px;">
+                    “Shock bills” are the ones that hit unexpectedly or irregularly: car repair, medical, late fees, school fees,
+                    copays, replacing essentials, work supplies, etc.
+                  </div>
+                </div>
+
+                <!-- RIGHT: Shock bills list + prompts -->
+                <div class="panel">
+                  <p class="sectionTitle">B. Shock bills list</p>
+                  <p class="sectionHint">Add a few common surprises you have actually experienced.</p>
+
+                  <div class="items" id="shockList"></div>
+
+                  <div class="sectionHint" style="margin-top:12px;">
+                    Quick prompts:
+                  </div>
+                  <div class="items" style="margin-top:10px;">
+                    <div class="pill">Car repair</div>
+                    <div class="pill">Medical copay</div>
+                    <div class="pill">Unexpected fee</div>
+                    <div class="pill">Work supplies</div>
+                    <div class="pill">Child expense</div>
+                    <div class="pill">Replace essentials</div>
+                    <div class="pill">Overdraft or late fee</div>
+                    <div class="pill">Utility spike</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Result -->
+              <div class="resultWrap" id="resultCard">
+                <div class="result">
+                  <div class="zone" id="zoneBar">
+                    <div class="icon" id="zoneIcon">•</div>
+                    <div>
+                      <h2 id="zoneTitle">Result</h2>
+                      <p id="zoneText">Enter your numbers and build your buffer.</p>
+                    </div>
+                  </div>
+
+                  <div class="metrics">
+                    <div class="metric">
+                      <p class="k">Recommended buffer</p>
+                      <p class="v" id="mBuffer">$0.00</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Monthly breathing room</p>
+                      <p class="v" id="mBreath">$0.00</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Shock load estimate</p>
+                      <p class="v" id="mShock">$0.00</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel" style="margin-top:12px;">
+                  <p class="sectionTitle">C. What this means</p>
+                  <p class="sectionHint">Plain-language reflection of your inputs, not advice.</p>
+
+                  <div class="listMini" id="meaningList"></div>
+
+                  <div class="hint" style="margin-top:12px;">
+                    This tool does not provide financial advice. It reflects your inputs and highlights the size of your “shock gap.”
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      PAYCHEKX is an everyday financial clarity toolset. Powered by AICV. This tool does not provide financial advice.
+      It reflects the inputs you enter for private use.
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function money(n){
+      if (!isFinite(n)) return "$0.00";
+      const sign = n < 0 ? "-" : "";
+      const abs = Math.abs(n);
+      return sign + "$" + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function parseAmount(val){
+      const n = Number(String(val).replace(/[^0-9.\-]/g, ""));
+      return isFinite(n) ? n : NaN;
+    }
+
+    function showError(msg){
+      const box = $("errorBox");
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+
+    function clearError(){
+      const box = $("errorBox");
+      box.textContent = "";
+      box.style.display = "none";
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // Shock items: { name, amount, likelihood }
+    // likelihood values: "rare" | "sometimes" | "often"
+    const shocks = [];
+
+    function likelihoodMultiplier(l){
+      // expected monthly portion multiplier
+      // rare: treat as 20% of stated amount monthly (e.g., once every ~5 months)
+      // sometimes: 40%
+      // often: 70% (frequent surprises)
+      if (l === "rare") return 0.20;
+      if (l === "sometimes") return 0.40;
+      if (l === "often") return 0.70;
+      return 0.40;
+    }
+
+    function likelihoodLabel(l){
+      if (l === "rare") return "Rare";
+      if (l === "sometimes") return "Sometimes";
+      if (l === "often") return "Often";
+      return "Sometimes";
+    }
+
+    function addShockRow(name="", amount="", likelihood="sometimes"){
+      shocks.push({ name, amount: amount === "" ? "" : Number(amount), likelihood });
+      renderShockList();
+    }
+
+    function renderShockList(){
+      const list = $("shockList");
+      list.innerHTML = "";
+
+      if (shocks.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "hint";
+        empty.style.marginTop = "10px";
+        empty.textContent = "No shock bills yet. Add one or two common surprises to estimate your shock load.";
+        list.appendChild(empty);
+        return;
+      }
+
+      shocks.forEach((it, idx) => {
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const left = document.createElement("div");
+        left.innerHTML = `<div style="font-weight:950; letter-spacing:-0.01em;">${escapeHtml(it.name || "Shock bill")}</div>
+                          <div class="mini">${likelihoodLabel(it.likelihood)} surprise</div>`;
+
+        const amt = document.createElement("div");
+        amt.innerHTML = `<div style="font-weight:950;">${money(Number(it.amount) || 0)}</div>
+                         <div class="mini">Typical hit</div>`;
+
+        const exp = document.createElement("div");
+        const expected = (Number(it.amount) || 0) * likelihoodMultiplier(it.likelihood);
+        exp.innerHTML = `<div style="font-weight:950;">${money(expected)}</div>
+                         <div class="mini">Expected monthly</div>`;
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "remove";
+        del.textContent = "Edit";
+        del.addEventListener("click", () => openEdit(idx));
+
+        row.appendChild(left);
+        row.appendChild(amt);
+        row.appendChild(exp);
+        row.appendChild(del);
+
+        list.appendChild(row);
+      });
+    }
+
+    function openEdit(idx){
+      // Simple prompt-based edit to keep single-file, fast UX
+      const it = shocks[idx];
+
+      const name = prompt("Shock bill name:", it.name || "");
+      if (name === null) return;
+
+      const amtStr = prompt("Typical amount (number):", String(it.amount || ""));
+      if (amtStr === null) return;
+
+      const amt = parseAmount(amtStr);
+      if (!isFinite(amt) || amt < 0){
+        alert("Please enter a valid amount (0 or higher).");
+        return;
+      }
+
+      const lStr = prompt("Likelihood: rare, sometimes, or often", it.likelihood || "sometimes");
+      if (lStr === null) return;
+
+      const l = String(lStr).trim().toLowerCase();
+      if (!["rare","sometimes","often"].includes(l)){
+        alert("Likelihood must be: rare, sometimes, or often.");
+        return;
+      }
+
+      shocks[idx] = { name: String(name).trim(), amount: amt, likelihood: l };
+      renderShockList();
+    }
+
+    function computeShockLoad(){
+      let total = 0;
+      for (const it of shocks){
+        const amt = Number(it.amount) || 0;
+        total += amt * likelihoodMultiplier(it.likelihood);
+      }
+      return total;
+    }
+
+    function modeMultiplier(mode){
+      // how much buffer beyond expected shock load
+      // minimum: 1.0x expected (covers expected)
+      // stable:  1.5x expected (handles clusters)
+      // strong:  2.0x expected (more resilient)
+      if (mode === "minimum") return 1.0;
+      if (mode === "stable") return 1.5;
+      if (mode === "strong") return 2.0;
+      return 1.5;
+    }
+
+    function buildMeaningLines(data){
+      const list = $("meaningList");
+      list.innerHTML = "";
+
+      const lines = [];
+
+      lines.push({
+        k: "Your baseline reality",
+        v: `Income ${money(data.income)}, Fixed bills ${money(data.baseBills)}, Essentials ${money(data.essentials)}.`
+      });
+
+      lines.push({
+        k: "Your shock load estimate",
+        v: shocks.length === 0
+          ? "You did not list shock bills. The estimate uses a basic minimum placeholder."
+          : `Based on your listed shock bills, your expected monthly shock load is ${money(data.shockLoad)}.`
+      });
+
+      lines.push({
+        k: "Recommended buffer",
+        v: `Based on your selected mode, a realistic buffer target is ${money(data.bufferTarget)}.`
+      });
+
+      if (data.breathingRoom <= 0){
+        lines.push({
+          k: "Breathing room",
+          v: `Your monthly breathing room after bills and essentials is ${money(data.breathingRoom)}. That indicates a tight month with little to no margin.`
+        });
+      } else if (data.breathingRoom < data.shockLoad){
+        lines.push({
+          k: "Shock gap",
+          v: `Your breathing room ${money(data.breathingRoom)} is smaller than your estimated shock load ${money(data.shockLoad)}. A surprise could push you negative.`
+        });
+      } else {
+        lines.push({
+          k: "Shock coverage",
+          v: `Your breathing room ${money(data.breathingRoom)} is large enough to absorb the estimated shock load ${money(data.shockLoad)} more comfortably.`
+        });
+      }
+
+      lines.push({
+        k: "Use case",
+        v: "This buffer is a target for reducing surprise damage. It is not a plan, it is a stability number."
+      });
+
+      for (const line of lines){
+        const row = document.createElement("div");
+        row.className = "rowLine";
+        row.innerHTML = `<b>${escapeHtml(line.k)}</b><span>${escapeHtml(line.v)}</span>`;
+        list.appendChild(row);
+      }
+    }
+
+    function renderResult(data){
+      // Zone logic: based on breathing room vs shock load and buffer feasibility
+      let zone = "safe";
+      let icon = "✓";
+      let title = "You can build stability with a clear target.";
+      let text  = "Based on what you entered, your buffer target is visible and your shock load is measurable.";
+
+      if (data.breathingRoom <= 0){
+        zone = "danger";
+        icon = "!";
+        title = "Your baseline month is already compressed.";
+        text  = "Based on what you entered, bills and essentials consume your income. Shock bills will likely create damage unless the baseline changes.";
+      } else if (data.breathingRoom < data.shockLoad){
+        zone = "tight";
+        icon = "•";
+        title = "Surprises are likely to hit harder than you can absorb.";
+        text  = "Based on what you entered, your shock load is larger than your breathing room. A buffer target matters here.";
+      } else if (data.bufferTarget > (data.breathingRoom * 2.5)){
+        zone = "tight";
+        icon = "•";
+        title = "Your buffer target is meaningful relative to your margin.";
+        text  = "Based on what you entered, building this buffer may take time. The number is still useful as a stabilization target.";
+      }
+
+      const zoneBar = $("zoneBar");
+      zoneBar.classList.remove("safe","tight","danger");
+      zoneBar.classList.add(zone);
+
+      $("zoneIcon").textContent = icon;
+      $("zoneTitle").textContent = title;
+      $("zoneText").textContent = text;
+
+      $("mBuffer").textContent = money(data.bufferTarget);
+      $("mBreath").textContent = money(data.breathingRoom);
+      $("mShock").textContent = money(data.shockLoad);
+
+      buildMeaningLines(data);
+
+      $("resultCard").style.display = "block";
+      $("resultCard").scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function compute(){
+      clearError();
+
+      const income = parseAmount($("income").value);
+      const baseBills = parseAmount($("baseBills").value);
+      const essentials = parseAmount($("essentials").value);
+
+      if (!isFinite(income) || income <= 0){
+        showError("Enter a monthly take home income greater than 0.");
+        return;
+      }
+      if (!isFinite(baseBills) || baseBills < 0){
+        showError("Enter a valid fixed bills total (0 or higher).");
+        return;
+      }
+      if (!isFinite(essentials) || essentials < 0){
+        showError("Enter a valid essentials total (0 or higher).");
+        return;
+      }
+
+      const mode = $("bufferMode").value;
+
+      // If no shocks are listed, apply a small placeholder shock load so the tool stays useful
+      const shockLoadRaw = computeShockLoad();
+      const shockLoad = (shocks.length === 0) ? Math.max(60, 0.03 * income) : shockLoadRaw;
+
+      const multiplier = modeMultiplier(mode);
+
+      // buffer target: expected shock load times multiplier, with floor based on income for realism
+      // floors: minimum 2% income, stable 4% income, strong 6% income (bounded to not be absurd)
+      let floorPct = 0.02;
+      if (mode === "stable") floorPct = 0.04;
+      if (mode === "strong") floorPct = 0.06;
+
+      const floor = Math.max(40, income * floorPct);
+      const bufferTarget = Math.max(floor, shockLoad * multiplier);
+
+      const breathingRoom = income - baseBills - essentials;
+
+      renderResult({ income, baseBills, essentials, shockLoad, bufferTarget, breathingRoom, mode });
+    }
+
+    function resetAll(){
+      clearError();
+      $("income").value = "";
+      $("baseBills").value = "";
+      $("essentials").value = "";
+      $("bufferMode").value = "minimum";
+      shocks.length = 0;
+      renderShockList();
+      $("resultCard").style.display = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    $("addShockBtn").addEventListener("click", () => {
+      const name = prompt("Shock bill name (example: car repair):", "");
+      if (name === null) return;
+
+      const amtStr = prompt("Typical amount (number):", "");
+      if (amtStr === null) return;
+
+      const amt = parseAmount(amtStr);
+      if (!isFinite(amt) || amt < 0){
+        alert("Please enter a valid amount (0 or higher).");
+        return;
+      }
+
+      const lStr = prompt("Likelihood: rare, sometimes, or often", "sometimes");
+      if (lStr === null) return;
+
+      const l = String(lStr).trim().toLowerCase();
+      if (!["rare","sometimes","often"].includes(l)){
+        alert("Likelihood must be: rare, sometimes, or often.");
+        return;
+      }
+
+      shocks.push({ name: String(name).trim(), amount: amt, likelihood: l });
+      renderShockList();
+    });
+
+    $("calcBtn").addEventListener("click", compute);
+    $("resetBtn").addEventListener("click", resetAll);
+
+    // Initial state
+    renderShockList();
+  </script>
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PAYCHEKX, Money Stress Reality Check | AICV</title>
+
+  <!-- REQUIRED FILES (same folder as this HTML)
+       1) favicon.ico                  (PAYCHEKX favicon)
+       2) aicv-mark.png                (AICV authority mark image)
+       3) paychekx-logo.png            (PAYCHEKX product line logo image)
+       4) aicv-glyph.svg               (AICV triangle glyph watermark tile)
+  -->
+
+  <link rel="icon" href="favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#060814;
+      --bg2:#04050d;
+      --text:#f3f6ff;
+      --muted:rgba(220, 230, 255, 0.72);
+      --muted2:rgba(220, 230, 255, 0.55);
+      --line:rgba(95, 116, 180, 0.22);
+      --shadow: 0 18px 50px rgba(0,0,0,0.55);
+      --radius:18px;
+      --good:rgba(34,197,94,0.16);
+      --warn:rgba(234,179,8,0.16);
+      --bad: rgba(239,68,68,0.16);
+      --panel: rgba(10, 12, 26, 0.62);
+      --panel2:#0b1022;
+      --panel3:#070b19;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 50% -10%, rgba(34, 188, 255, 0.18), transparent 55%),
+                  radial-gradient(900px 600px at 10% 30%, rgba(85, 140, 255, 0.12), transparent 55%),
+                  radial-gradient(900px 600px at 90% 25%, rgba(80, 255, 200, 0.08), transparent 60%),
+                  linear-gradient(180deg, var(--bg2), var(--bg));
+      overflow-x:hidden;
+    }
+
+    .frame{ min-height:100vh; display:flex; flex-direction:column; position:relative; isolation:isolate; }
+
+    /* Authority Header Zone */
+    .authority{
+      position:relative; z-index:5;
+      padding:18px 16px 12px;
+      max-width:1060px; margin:0 auto; width:100%;
+    }
+    .authorityBar{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.55);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 34px rgba(0,0,0,0.32);
+    }
+    .aicvLockup{ display:flex; align-items:center; gap:12px; min-width:240px; }
+    .aicvMark{
+      width:44px; height:44px; object-fit:contain;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.55));
+    }
+    .aicvText{ display:flex; flex-direction:column; line-height:1.05; }
+    .aicvName{
+      font-weight:900; letter-spacing:0.08em; font-size:12px;
+      color:rgba(235, 245, 255, 0.92); text-transform:uppercase;
+    }
+    .aicvTag{
+      margin-top:6px; font-size:11px; letter-spacing:0.16em;
+      text-transform:uppercase; color:rgba(220, 230, 255, 0.58); white-space:nowrap;
+    }
+    .productLockup{ display:flex; align-items:center; justify-content:flex-end; gap:12px; min-width:240px; }
+    .productLogo{
+      height:34px; width:auto; object-fit:contain;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.55));
+    }
+
+    /* Context Field */
+    .context{
+      position:relative; z-index:1; flex:1;
+      display:flex; align-items:center; justify-content:center;
+      padding:22px 16px 60px;
+    }
+    .context::before{
+      content:""; position:absolute; inset:0;
+      background:
+        radial-gradient(1px 1px at 20% 35%, rgba(255,255,255,0.28), transparent 55%),
+        radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.22), transparent 55%),
+        radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.18), transparent 55%),
+        radial-gradient(1px 1px at 80% 30%, rgba(255,255,255,0.20), transparent 55%),
+        radial-gradient(2px 2px at 30% 70%, rgba(64,220,255,0.15), transparent 60%),
+        radial-gradient(2px 2px at 70% 65%, rgba(60,130,255,0.12), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 35%, rgba(255,255,255,0.02));
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .context::after{
+      content:""; position:absolute; inset:0;
+      background-image:url("aicv-glyph.svg");
+      background-repeat:repeat;
+      background-size:160px 160px;
+      background-position:14px 10px;
+      opacity:0.07;
+      filter:saturate(1.05) brightness(1.08);
+      pointer-events:none; z-index:0;
+    }
+
+    .horizon{
+      position:absolute; left:0; right:0; bottom:0; height:220px;
+      pointer-events:none; z-index:1;
+      background:
+        radial-gradient(70% 60% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(60% 50% at 50% 55%, rgba(40,120,255,0.14), transparent 62%),
+        linear-gradient(180deg, transparent 0%, rgba(4, 6, 14, 0.25) 40%, rgba(4, 6, 14, 0.72) 100%);
+    }
+    .horizon::before{
+      content:""; position:absolute; left:10%; right:10%; bottom:70px; height:2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(64,220,255,0.75) 30%, rgba(80,255,200,0.35) 50%, rgba(40,120,255,0.75) 70%, transparent 100%);
+      opacity:0.75;
+    }
+    .horizon::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:120px;
+      background: linear-gradient(180deg, rgba(6,8,20,0.0), rgba(6,8,20,0.7) 55%, rgba(6,8,20,0.92));
+    }
+
+    .payload{
+      position:relative; z-index:3;
+      width:min(900px, 100%); margin:0 auto;
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+    }
+
+    .titleBlock{
+      width:100%;
+      padding:18px 18px 10px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.38);
+    }
+    .artifactTitle{ margin:0; font-size:26px; letter-spacing:-0.02em; font-weight:950; }
+    .artifactSub{ margin:8px 0 0; font-size:13px; color:var(--muted); line-height:1.45; }
+
+    .stage{ position:relative; width:100%; padding-bottom:26px; }
+    .stage::before{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:18px;
+      width:min(800px, 92%); height:240px;
+      background:
+        radial-gradient(60% 50% at 50% 20%, rgba(64,220,255,0.18), transparent 60%),
+        radial-gradient(55% 50% at 50% 55%, rgba(40,120,255,0.12), transparent 65%),
+        radial-gradient(65% 60% at 50% 90%, rgba(0,0,0,0.62), transparent 70%);
+      opacity:0.9; pointer-events:none; z-index:0;
+    }
+    .stage::after{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:185px;
+      width:min(760px, 90%); height:26px; border-radius:999px;
+      background: radial-gradient(closest-side, rgba(64,220,255,0.35), rgba(40,120,255,0.16), transparent 70%);
+      filter: blur(6px); opacity:0.55; pointer-events:none; z-index:0;
+    }
+
+    .toolCard{
+      position:relative; z-index:2; width:100%;
+      border-radius: var(--radius);
+      border:1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .toolCard::before{
+      content:""; position:absolute; inset:-1px;
+      background:
+        radial-gradient(820px 240px at 50% 0%, rgba(64,220,255,0.16), transparent 60%),
+        radial-gradient(650px 260px at 10% 0%, rgba(80,255,200,0.08), transparent 65%),
+        radial-gradient(650px 260px at 90% 0%, rgba(40,120,255,0.10), transparent 65%);
+      pointer-events:none; z-index:0;
+    }
+    .toolInner{ position:relative; z-index:1; padding:16px; }
+
+    .sectionTitle{
+      margin:0;
+      font-size:14px;
+      font-weight:950;
+      letter-spacing:0.01em;
+    }
+    .sectionHint{
+      margin:6px 0 0;
+      font-size:12.5px;
+      color:rgba(220, 230, 255, 0.62);
+      line-height:1.45;
+    }
+
+    .checks{ margin-top:10px; display:flex; flex-direction:column; gap:10px; }
+    .check{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:10px 12px; border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+    }
+    .check input{ transform: translateY(2px); }
+    .check strong{ display:block; font-size:14px; }
+    .check span{ display:block; font-size:13px; color:rgba(220, 230, 255, 0.58); line-height:1.35; margin-top:2px; }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .row > .col{ flex:1 1 240px; }
+
+    label{ display:block; font-size:13px; color:var(--muted2); margin:10px 0 6px; }
+    input[type="number"]{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:var(--text);
+      font-size:16px;
+      outline:none;
+      appearance:textfield;
+    }
+
+    .seg{
+      display:flex; gap:8px; flex-wrap:wrap;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      border-radius:12px;
+      padding:8px;
+    }
+    .seg button{
+      flex:1 1 120px;
+      border:1px solid rgba(120,140,210,0.22);
+      background:#070b19;
+      color:rgba(220, 230, 255, 0.62);
+      padding:10px 12px;
+      border-radius:10px;
+      font-weight:950;
+      cursor:pointer;
+    }
+    .seg button.active{
+      background:#111a33;
+      color:var(--text);
+    }
+
+    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    button.primary, button.secondary{
+      border:1px solid rgba(120,140,210,0.22);
+      padding:12px 14px;
+      border-radius:12px;
+      font-weight:950;
+      font-size:15px;
+      cursor:pointer;
+      flex:1 1 180px;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.35);
+      background: linear-gradient(180deg, rgba(18, 24, 52, 0.95), rgba(10, 12, 26, 0.95));
+      color:var(--text);
+    }
+    button.secondary{
+      background: var(--panel2);
+      color:rgba(220, 230, 255, 0.62);
+      box-shadow:none;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .error{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:rgba(255, 150, 175, 0.95);
+      font-weight:900;
+      display:none;
+    }
+
+    .resultWrap{ margin-top:14px; display:none; }
+    .result{
+      border-radius:16px;
+      border:1px solid rgba(120,140,210,0.22);
+      overflow:hidden;
+      background: rgba(10,12,26,0.55);
+    }
+    .zone{
+      padding:14px;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      position:relative;
+    }
+    .zone .icon{
+      width:36px; height:36px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:950;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel3);
+      flex:0 0 auto;
+    }
+    .zone h2{ margin:0; font-size:18px; letter-spacing:-0.01em; }
+    .zone p{ margin:6px 0 0; color:rgba(220, 230, 255, 0.70); line-height:1.45; }
+
+    .metrics{
+      padding:12px 14px 14px;
+      border-top:1px solid rgba(120,140,210,0.22);
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:10px;
+      background: var(--panel2);
+    }
+    .metric{
+      border:1px solid rgba(120,140,210,0.18);
+      background: var(--panel3);
+      border-radius:14px;
+      padding:10px;
+    }
+    .metric .k{ color:rgba(220, 230, 255, 0.58); font-size:12px; margin:0 0 6px; }
+    .metric .v{ font-size:18px; font-weight:950; margin:0; }
+
+    .zone.safe  { background: linear-gradient(90deg, var(--good), rgba(10,12,26,0.0)); }
+    .zone.tight { background: linear-gradient(90deg, var(--warn), rgba(10,12,26,0.0)); }
+    .zone.danger{ background: linear-gradient(90deg, var(--bad), rgba(10,12,26,0.0)); }
+
+    .smallNote{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(120,140,210,0.22);
+      background: var(--panel2);
+      color:rgba(220, 230, 255, 0.62);
+      font-size:12.5px;
+      line-height:1.45;
+      display:none;
+    }
+
+    .foot{
+      margin-top:12px;
+      padding:12px 16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(10, 12, 26, 0.48);
+      backdrop-filter: blur(10px);
+      color:rgba(220, 230, 255, 0.62);
+      font-size:12.5px;
+      line-height:1.5;
+      max-width:1060px;
+      margin-left:auto;
+      margin-right:auto;
+      margin-bottom:22px;
+    }
+
+    @media (max-width: 520px){
+      .metrics{ grid-template-columns: 1fr; }
+      .aicvTag{ display:none; }
+      .productLogo{ height:30px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="frame">
+    <header class="authority">
+      <div class="authorityBar">
+        <div class="aicvLockup">
+          <img class="aicvMark" src="aicv-mark.png" alt="AICV" />
+          <div class="aicvText">
+            <div class="aicvName">AICV</div>
+            <div class="aicvTag">ARTIFICIAL INTELLIGENCE CAPITAL VENTURES</div>
+          </div>
+        </div>
+        <div class="productLockup">
+          <img class="productLogo" src="paychekx-logo.png" alt="PAYCHEKX" />
+        </div>
+      </div>
+    </header>
+
+    <main class="context">
+      <div class="horizon" aria-hidden="true"></div>
+
+      <section class="payload" aria-label="PAYCHEKX tool">
+        <div class="titleBlock">
+          <h1 class="artifactTitle">Money Stress Reality Check</h1>
+          <p class="artifactSub">
+            A PAYCHEKX financial clarity tool. Separate money stress from real financial risk, without judgment or advice.
+            Nothing is saved, no accounts, no tracking.
+          </p>
+        </div>
+
+        <div class="stage">
+          <div class="toolCard" aria-label="Tool card">
+            <div class="toolInner">
+              <div>
+                <p class="sectionTitle">A. Money stress signals</p>
+                <p class="sectionHint">Check what has been true lately. There are no right answers.</p>
+
+                <div class="checks" id="stressChecks">
+                  <label class="check">
+                    <input type="checkbox" data-score="1" />
+                    <div>
+                      <strong>I worry about money most days</strong>
+                      <span>It stays in my head, even when I’m trying to focus.</span>
+                    </div>
+                  </label>
+
+                  <label class="check">
+                    <input type="checkbox" data-score="1" />
+                    <div>
+                      <strong>Unexpected expenses stress me out a lot</strong>
+                      <span>A small surprise feels like it could wreck the week.</span>
+                    </div>
+                  </label>
+
+                  <label class="check">
+                    <input type="checkbox" data-score="1" />
+                    <div>
+                      <strong>I avoid checking my bank account</strong>
+                      <span>I put it off because I don’t want to see it.</span>
+                    </div>
+                  </label>
+
+                  <label class="check">
+                    <input type="checkbox" data-score="1" />
+                    <div>
+                      <strong>I feel behind even when bills are paid</strong>
+                      <span>I’m okay, but it still feels like I’m losing.</span>
+                    </div>
+                  </label>
+
+                  <label class="check">
+                    <input type="checkbox" data-score="1" />
+                    <div>
+                      <strong>I think about money late at night</strong>
+                      <span>It keeps me awake or interrupts my sleep.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div style="margin-top:14px;">
+                <p class="sectionTitle">B. Quick reality inputs</p>
+                <p class="sectionHint">Simple facts. Keep it rough, no perfection needed.</p>
+
+                <div class="row">
+                  <div class="col">
+                    <label for="leftAfterBills">Money left after bills this month</label>
+                    <input id="leftAfterBills" type="number" inputmode="decimal" step="0.01" placeholder="Example: 120 (or -40 if short)" />
+                    <div class="sectionHint" style="margin-top:8px;">
+                      If you’re short, enter a negative number.
+                    </div>
+                  </div>
+
+                  <div class="col">
+                    <label>Any bills currently past due?</label>
+                    <div class="seg" role="group" aria-label="Past due bills">
+                      <button id="pastDueNo" type="button" class="active">No</button>
+                      <button id="pastDueYes" type="button">Yes</button>
+                    </div>
+
+                    <label style="margin-top:12px;">Any income uncertainty in the next 30 days?</label>
+                    <div class="seg" role="group" aria-label="Income uncertainty">
+                      <button id="incomeUncNo" type="button" class="active">No</button>
+                      <button id="incomeUncYes" type="button">Yes</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="btnrow">
+                  <button class="primary" id="checkBtn" type="button">Check my reality</button>
+                  <button class="secondary" id="resetBtn" type="button">Reset</button>
+                </div>
+
+                <div class="error" id="errorBox"></div>
+              </div>
+
+              <div class="resultWrap" id="resultCard">
+                <div class="result">
+                  <div class="zone" id="zoneBar">
+                    <div class="icon" id="zoneIcon">•</div>
+                    <div>
+                      <h2 id="zoneTitle">Result</h2>
+                      <p id="zoneText">Enter your answers and check your reality.</p>
+                    </div>
+                  </div>
+
+                  <div class="metrics">
+                    <div class="metric">
+                      <p class="k">Stress signals checked</p>
+                      <p class="v" id="mStress">0 / 5</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Real risk flags</p>
+                      <p class="v" id="mRisk">0</p>
+                    </div>
+                    <div class="metric">
+                      <p class="k">Money after bills</p>
+                      <p class="v" id="mLeft">$0.00</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="smallNote" id="nextNote"></div>
+
+                <div class="sectionHint" style="margin-top:10px;">
+                  This tool does not provide financial advice. It reflects what your inputs indicate right now.
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      PAYCHEKX is an everyday financial clarity toolset. Powered by AICV. This tool does not provide financial or mental health advice.
+      It reflects your inputs in plain language for private use.
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function money(n){
+      if (!isFinite(n)) return "$0.00";
+      const sign = n < 0 ? "-" : "";
+      const abs = Math.abs(n);
+      return sign + "$" + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function parseAmount(val){
+      const n = Number(String(val).replace(/[^0-9.\-]/g, ""));
+      return isFinite(n) ? n : NaN;
+    }
+
+    function showError(msg){
+      const box = $("errorBox");
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+
+    function clearError(){
+      const box = $("errorBox");
+      box.textContent = "";
+      box.style.display = "none";
+    }
+
+    const state = { pastDue:false, incomeUnc:false };
+
+    function setSeg(noBtn, yesBtn, val){
+      if (val){
+        noBtn.classList.remove("active");
+        yesBtn.classList.add("active");
+      } else {
+        yesBtn.classList.remove("active");
+        noBtn.classList.add("active");
+      }
+    }
+
+    function initSeg(){
+      $("pastDueNo").addEventListener("click", () => { state.pastDue = false; setSeg($("pastDueNo"), $("pastDueYes"), false); });
+      $("pastDueYes").addEventListener("click", () => { state.pastDue = true;  setSeg($("pastDueNo"), $("pastDueYes"), true);  });
+
+      $("incomeUncNo").addEventListener("click", () => { state.incomeUnc = false; setSeg($("incomeUncNo"), $("incomeUncYes"), false); });
+      $("incomeUncYes").addEventListener("click", () => { state.incomeUnc = true;  setSeg($("incomeUncNo"), $("incomeUncYes"), true);  });
+    }
+
+    function compute(){
+      clearError();
+
+      const leftAfterBills = parseAmount($("leftAfterBills").value);
+      if (!isFinite(leftAfterBills)){
+        showError("Please enter your money left after bills (use a negative number if you’re short).");
+        return;
+      }
+
+      const checks = Array.from(document.querySelectorAll('#stressChecks input[type="checkbox"]'));
+      const stressScore = checks.reduce((sum, cb) => sum + (cb.checked ? 1 : 0), 0); // 0..5
+
+      let riskFlags = 0;
+      if (leftAfterBills <= 0) riskFlags += 1;
+      if (state.pastDue) riskFlags += 1;
+      if (state.incomeUnc) riskFlags += 1;
+
+      const stressHigh = stressScore >= 3;
+      const stressLow  = stressScore <= 1;
+
+      let zone = "tight";
+      let icon = "•";
+      let title = "Your stress matches your situation.";
+      let text  = "Your stress makes sense. There are real pressure points, but they look contained based on what you entered.";
+
+      if (riskFlags >= 2 || (riskFlags === 1 && stressLow && leftAfterBills <= 0)){
+        zone = "danger";
+        icon = "!";
+        title = "Your situation deserves attention.";
+        text  = "Based on what you entered, there are real financial risk signals that deserve attention, even if you’ve been pushing through.";
+      } else if (stressHigh && riskFlags === 0){
+        zone = "safe";
+        icon = "✓";
+        title = "Your stress is higher than your financial danger.";
+        text  = "Based on what you entered, your situation looks tight but not currently dangerous. A lot of the pressure may be mental load, not immediate risk.";
+      }
+
+      renderResult({ zone, icon, title, text, stressScore, riskFlags, leftAfterBills });
+    }
+
+    function renderResult(data){
+      const { zone, icon, title, text, stressScore, riskFlags, leftAfterBills } = data;
+
+      const zoneBar = $("zoneBar");
+      zoneBar.classList.remove("safe", "tight", "danger");
+      zoneBar.classList.add(zone);
+
+      $("zoneIcon").textContent = icon;
+      $("zoneTitle").textContent = title;
+      $("zoneText").textContent = text;
+
+      $("mStress").textContent = `${stressScore} / 5`;
+      $("mRisk").textContent = String(riskFlags);
+      $("mLeft").textContent = money(leftAfterBills);
+
+      const note = $("nextNote");
+      note.style.display = "block";
+
+      if (zone === "danger"){
+        note.textContent = "If you want a quick clarity step, use the Paycheck Runway Checker next. It shows the time window to your next pay date.";
+      } else if (zone === "tight"){
+        note.textContent = "You’re in a mixed zone. If you want more clarity, the Paycheck Runway Checker can show your runway to the next payday.";
+      } else {
+        note.textContent = "If stress feels heavy even when risk is low, reduce mental load by tracking only the next pay window.";
+      }
+
+      $("resultCard").style.display = "block";
+      $("resultCard").scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function resetAll(){
+      clearError();
+      Array.from(document.querySelectorAll('#stressChecks input[type="checkbox"]')).forEach(cb => cb.checked = false);
+
+      $("leftAfterBills").value = "";
+
+      state.pastDue = false;
+      state.incomeUnc = false;
+
+      $("pastDueNo").classList.add("active");
+      $("pastDueYes").classList.remove("active");
+
+      $("incomeUncNo").classList.add("active");
+      $("incomeUncYes").classList.remove("active");
+
+      $("resultCard").style.display = "none";
+      $("nextNote").style.display = "none";
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    $("checkBtn").addEventListener("click", compute);
+    $("resetBtn").addEventListener("click", resetAll);
+
+    initSeg();
+  </script>
+</body>
+</html>
