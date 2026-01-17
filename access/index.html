@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PAYCHEKX, Access | AICV</title>
+
+  <link rel="icon" href="favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#060814;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.08);
+      --stroke:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.72);
+      --cyan:#4fd7ff;
+      --cyan2:#1aa7ff;
+      --shadow:0 24px 60px rgba(0,0,0,.45);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(1100px 600px at 70% 10%, rgba(79,215,255,.18), transparent 55%),
+        radial-gradient(900px 500px at 25% 15%, rgba(26,167,255,.15), transparent 50%),
+        radial-gradient(900px 800px at 50% 120%, rgba(79,215,255,.10), transparent 60%),
+        var(--bg);
+      min-height:100vh;
+    }
+    header{
+      position:sticky;
+      top:0;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to bottom, rgba(6,8,20,.88), rgba(6,8,20,.55));
+      border-bottom:1px solid var(--stroke);
+      z-index:10;
+    }
+    .bar{
+      max-width:1100px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .lockup{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:260px;
+    }
+    .lockup img{
+      width:34px;
+      height:34px;
+      object-fit:contain;
+      filter: drop-shadow(0 0 18px rgba(79,215,255,.25));
+    }
+    .lockup b{letter-spacing:.5px}
+    .lockup span{font-size:12px;color:var(--muted);letter-spacing:.8px}
+    .product{
+      height:30px;
+      object-fit:contain;
+      filter: drop-shadow(0 0 22px rgba(79,215,255,.18));
+      opacity:.95;
+    }
+
+    main{max-width:1100px;margin:0 auto;padding:22px 16px 44px}
+    .hero{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border-radius:var(--radius);
+      padding:18px 18px;
+      box-shadow:var(--shadow);
+    }
+    h1{margin:0 0 10px;font-size:28px;letter-spacing:.2px}
+    p{margin:0;color:var(--muted);line-height:1.5}
+    .pillrow{
+      margin-top:14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+    .pill{
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.05);
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .pill strong{color:var(--text);font-weight:700}
+    .warn{
+      margin-top:14px;
+      font-size:12px;
+      color:rgba(255,255,255,.70);
+    }
+
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+    }
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr}
+      .lockup{min-width:unset}
+    }
+    .panel{
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.05);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+    .panel h2{margin:0 0 10px;font-size:16px;letter-spacing:.2px}
+    .sub{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.45}
+    .list{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    .tool{
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
+      border-radius:14px;
+      padding:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .tool .name{font-weight:700}
+    .tool .desc{font-size:12px;color:var(--muted);margin-top:4px}
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(79,215,255,.35);
+      background: linear-gradient(180deg, rgba(79,215,255,.20), rgba(26,167,255,.16));
+      color:var(--text);
+      text-decoration:none;
+      font-weight:700;
+      letter-spacing:.2px;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn:hover{filter:brightness(1.08)}
+    .btn.ghost{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--stroke);
+      font-weight:700;
+      color:var(--text);
+    }
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+      line-height:1.45;
+    }
+
+    .rightbox{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .tierbox{
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.05);
+      border-radius:var(--radius);
+      padding:14px;
+    }
+    .tierline{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .tierbadge{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(79,215,255,.10);
+      border:1px solid rgba(79,215,255,.25);
+      color:rgba(255,255,255,.88);
+    }
+    .checklist{
+      margin:0;
+      padding-left:16px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+    footer{
+      padding:18px 16px 28px;
+      border-top:1px solid var(--stroke);
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+      text-align:center;
+    }
+    code.k{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      padding:2px 6px;
+      border-radius:8px;
+      color:rgba(255,255,255,.86);
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="bar">
+    <div class="lockup">
+      <img src="aicv-mark.png" alt="AICV">
+      <div>
+        <b>AICV</b><br>
+        <span>ARTIFICIAL INTELLIGENCE CAPITAL VENTURES</span>
+      </div>
+    </div>
+    <img src="paychekx-logo.png" class="product" alt="PAYCHEKX">
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>PAYCHEKX Access</h1>
+    <p>
+      If you just completed checkout, your access is ready.
+      Choose your tool below based on the package you purchased.
+    </p>
+
+    <div class="pillrow">
+      <div class="pill">Tier detected: <strong id="tierLabel">Unknown</strong></div>
+      <div class="pill">No accounts, no tracking</div>
+      <div class="pill">Private use</div>
+    </div>
+
+    <div class="warn" id="warnBox" style="display:none;">
+      If you did not come here from Stripe, your tier may show as Unknown.
+      If so, open your Stripe receipt and click the “Return to merchant” button, or use the monetization page and repurchase if needed.
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2 id="panelTitle">Tools</h2>
+      <div class="sub" id="panelSub">
+        Select a tool to launch. Opens instantly in your browser.
+      </div>
+
+      <div class="list" id="toolList"></div>
+
+      <div class="small">
+        Tip: Bookmark this page for your own access.
+        If you change devices later, you can return here using your Stripe receipt link.
+      </div>
+    </div>
+
+    <div class="rightbox">
+      <div class="tierbox">
+        <div class="tierline">
+          <div class="tierbadge" id="tierBadge">ACCESS</div>
+          <a class="btn ghost" href="/monetization/">Pricing</a>
+        </div>
+        <ul class="checklist" id="tierNotes"></ul>
+      </div>
+
+      <div class="tierbox">
+        <div class="tierline">
+          <div class="tierbadge">Support</div>
+        </div>
+        <div class="small">
+          If a tool does not open, confirm you are using a modern browser and that pop-ups are not blocked.
+          Each tool is a local HTML system loaded from <code class="k">/tools/</code>.
+        </div>
+      </div>
+
+      <div class="tierbox">
+        <div class="tierline">
+          <div class="tierbadge">Disclosure</div>
+        </div>
+        <div class="small">
+          PAYCHEKX provides financial clarity tools for planning and stabilization.
+          It is not financial advice. No data storage. No tracking.
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  PAYCHEKX is a private-use financial clarity system powered by AICV. No data storage. No accounts. No tracking.
+</footer>
+
+<script>
+  const tools = [
+    {
+      key: "runway",
+      name: "Runway Checker",
+      desc: "How long your cash lasts at current burn.",
+      href: "/tools/runway-checker.html",
+      tier: ["core", "full", "single"]
+    },
+    {
+      key: "triage",
+      name: "Bill Triage Board",
+      desc: "Prioritize bills under constraint.",
+      href: "/tools/bill-triage-board.html",
+      tier: ["core", "full", "single"]
+    },
+    {
+      key: "split",
+      name: "Payday Split Planner",
+      desc: "Allocate each paycheck with discipline.",
+      href: "/tools/payday-split-planner.html",
+      tier: ["core", "full", "single"]
+    },
+    {
+      key: "micro",
+      name: "Emergency Micro Budget",
+      desc: "Tight-margin budget builder.",
+      href: "/tools/emergency-micro-budget.html",
+      tier: ["core", "full", "single"]
+    },
+    {
+      key: "shock",
+      name: "Bill Shock Buffer Builder",
+      desc: "Build a buffer for irregular expenses.",
+      href: "/tools/bill-shock-buffer-builder.html",
+      tier: ["full", "single"]
+    },
+    {
+      key: "stress",
+      name: "Money Stress Reality Check",
+      desc: "Reality-based snapshot of pressure points.",
+      href: "/tools/money-stress-reality-check.html",
+      tier: ["full", "single"]
+    },
+    {
+      key: "hidden",
+      name: "Hidden Bills Subscription Finder",
+      desc: "Find recurring drains you forgot.",
+      href: "/tools/hidden-bills-subscription-finder.html",
+      tier: ["full", "single"]
+    },
+    {
+      key: "debt",
+      name: "Debt Pressure Snapshot",
+      desc: "Quantify debt pressure quickly.",
+      href: "/tools/debt-pressure-snapshot.html",
+      tier: ["full", "single"]
+    }
+  ];
+
+  function getTier(){
+    const url = new URL(window.location.href);
+    const tier = (url.searchParams.get("tier") || "").toLowerCase();
+    if (["single","core","full"].includes(tier)) return tier;
+    return "unknown";
+  }
+
+  function setTierUI(tier){
+    const label = document.getElementById("tierLabel");
+    const badge = document.getElementById("tierBadge");
+    const warn = document.getElementById("warnBox");
+    const notes = document.getElementById("tierNotes");
+
+    const map = {
+      single: {label:"Single Tool", badge:"SINGLE", notes:[
+        "Choose one tool from the list.",
+        "No accounts or tracking.",
+        "If you purchased multiple single tools, bookmark this page and repeat checkout as needed."
+      ]},
+      core: {label:"Core Survival Bundle", badge:"CORE", notes:[
+        "Includes 4 tools: Runway, Triage, Split, Micro Budget.",
+        "No accounts or tracking.",
+        "Bookmark this page for repeat access."
+      ]},
+      full: {label:"Full Suite", badge:"FULL", notes:[
+        "Includes all 8 tools.",
+        "Complete stabilization loop access.",
+        "Bookmark this page for repeat access."
+      ]},
+      unknown: {label:"Unknown", badge:"ACCESS", notes:[
+        "Tier not detected. This usually means you did not arrive from Stripe redirect.",
+        "If you just paid, use your Stripe receipt and click “Return to merchant.”",
+        "Or go to Pricing and complete checkout."
+      ]}
+    };
+
+    const cfg = map[tier] || map.unknown;
+    label.textContent = cfg.label;
+    badge.textContent = cfg.badge;
+    warn.style.display = (tier === "unknown") ? "block" : "none";
+    notes.innerHTML = "";
+    cfg.notes.forEach(t => {
+      const li = document.createElement("li");
+      li.textContent = t;
+      notes.appendChild(li);
+    });
+  }
+
+  function renderTools(tier){
+    const list = document.getElementById("toolList");
+    const title = document.getElementById("panelTitle");
+    const sub = document.getElementById("panelSub");
+
+    list.innerHTML = "";
+
+    let allowed;
+    if (tier === "core") allowed = tools.filter(t => t.tier.includes("core"));
+    else if (tier === "full") allowed = tools.filter(t => t.tier.includes("full"));
+    else if (tier === "single") allowed = tools.filter(t => t.tier.includes("single"));
+    else allowed = []; // unknown
+
+    if (tier === "unknown"){
+      title.textContent = "Access not detected";
+      sub.textContent = "Use the Pricing button to complete checkout, then you will be redirected back here.";
+      const a = document.createElement("a");
+      a.className = "btn";
+      a.href = "/monetization/";
+      a.textContent = "Open pricing";
+      list.appendChild(a);
+      return;
+    }
+
+    title.textContent = (tier === "single") ? "Choose your tool" : "Your tools are ready";
+    sub.textContent = "Click any tool to launch.";
+
+    allowed.forEach(t => {
+      const row = document.createElement("div");
+      row.className = "tool";
+
+      const left = document.createElement("div");
+      const nm = document.createElement("div");
+      nm.className = "name";
+      nm.textContent = t.name;
+
+      const ds = document.createElement("div");
+      ds.className = "desc";
+      ds.textContent = t.desc;
+
+      left.appendChild(nm);
+      left.appendChild(ds);
+
+      const btn = document.createElement("a");
+      btn.className = "btn";
+      btn.href = t.href;
+      btn.target = "_blank";
+      btn.rel = "noopener";
+      btn.textContent = "Open";
+
+      row.appendChild(left);
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+  }
+
+  const tier = getTier();
+  setTierUI(tier);
+  renderTools(tier);
+</script>
+
+</body>
+</html>
