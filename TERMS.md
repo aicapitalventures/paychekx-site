@@ -2,7 +2,7 @@ TERMS OF USE
 
 PAYCHEKX
 
-Last updated: [insert date]
+Last updated: 1/18/2026
 
 1. Acceptance of Terms
 
